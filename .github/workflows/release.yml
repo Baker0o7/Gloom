@@ -1,0 +1,79 @@
+name: Release APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build debug APK
+        run: ./gradlew :app:android:assembleDebug
+
+      - name: Rename APK
+        run: |
+          mkdir -p release-out
+          cp app/android/build/outputs/apk/debug/gloom-debug.apk \
+             release-out/Gloom-${{ steps.version.outputs.tag }}.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Gloom ${{ steps.version.outputs.tag }}
+          body: |
+            ## Gloom ${{ steps.version.outputs.tag }}
+
+            ### What's new
+            - Fixed notifications inbox — inbox was completely blank due to missing implementation
+            - Added `NotificationsViewModel` with real GitHub REST API integration
+            - Notifications now load via `GET /notifications?all=true`
+            - Sticky repo group headers with unread count badges
+            - Tap a notification to mark it as read
+            - "Mark all read" toolbar action
+            - Pull-to-refresh support
+            - Empty state when inbox is clear
+
+            ### Install
+            1. Download `Gloom-${{ steps.version.outputs.tag }}.apk` below
+            2. Enable **Install unknown apps** on your device
+            3. Open the APK to install
+
+            > This is a debug build signed with the debug keystore.
+          files: release-out/Gloom-${{ steps.version.outputs.tag }}.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
