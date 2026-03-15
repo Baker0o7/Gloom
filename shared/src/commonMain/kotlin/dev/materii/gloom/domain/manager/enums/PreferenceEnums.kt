@@ -6,6 +6,16 @@ enum class Theme {
     DARK
 }
 
+enum class ColorTheme {
+    DEFAULT,
+    GITHUB,
+    CATPPUCCIN,
+    DRACULA,
+    NORD,
+    ROSE_PINE,
+    AYU
+}
+
 enum class AvatarShape {
     Circle,
     RoundedCorner,

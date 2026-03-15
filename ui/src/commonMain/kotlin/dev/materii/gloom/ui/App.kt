@@ -45,7 +45,7 @@ fun App(
         Theme.DARK   -> true
     }
 
-    GloomTheme(isDark, prefs.monet) {
+    GloomTheme(isDark, prefs.monet, prefs.colorTheme) {
         AlertHost { alertController ->
             Navigator(
                 screens = screens,

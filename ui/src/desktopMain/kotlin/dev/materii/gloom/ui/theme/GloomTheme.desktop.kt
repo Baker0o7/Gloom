@@ -1,14 +1,15 @@
 package dev.materii.gloom.ui.theme
 
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import dev.materii.gloom.domain.manager.enums.ColorTheme
 
 @Composable
-actual fun getColorSchemes(darkTheme: Boolean, dynamicColor: Boolean): Pair<ColorScheme, GloomColorScheme> {
-    return when {
-        darkTheme -> darkColorScheme() to darkGloomColorScheme()
-        else      -> lightColorScheme() to lightGloomColorScheme()
-    }
+actual fun getColorSchemes(
+    darkTheme: Boolean,
+    dynamicColor: Boolean,
+    colorTheme: ColorTheme
+): Pair<ColorScheme, GloomColorScheme> {
+    return colorTheme.toColorScheme(darkTheme) to
+        if (darkTheme) darkGloomColorScheme() else lightGloomColorScheme()
 }

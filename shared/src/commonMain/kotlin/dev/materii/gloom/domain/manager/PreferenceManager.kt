@@ -6,6 +6,7 @@ import dev.materii.gloom.domain.manager.base.enumPreference
 import dev.materii.gloom.domain.manager.base.intPreference
 import dev.materii.gloom.domain.manager.enums.AppIcon
 import dev.materii.gloom.domain.manager.enums.AvatarShape
+import dev.materii.gloom.domain.manager.enums.ColorTheme
 import dev.materii.gloom.domain.manager.enums.Theme
 import dev.materii.gloom.domain.manager.enums.TrendingPeriodPreference
 import dev.materii.gloom.util.SettingsProvider
@@ -14,6 +15,7 @@ class PreferenceManager(provider: SettingsProvider):
     BasePreferenceManager(provider) {
 
     var theme by enumPreference("theme", Theme.SYSTEM)
+    var colorTheme by enumPreference("color_theme", ColorTheme.DEFAULT)
     var monet by booleanPreference("monet", dev.materii.gloom.util.supportsMonet)
 
     var userAvatarShape by enumPreference("user_avatar_shape", AvatarShape.Circle)

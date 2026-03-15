@@ -1,5 +1,6 @@
 package dev.materii.gloom.ui.screen.settings
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -68,6 +69,23 @@ class AppearanceSettingsScreen: Screen {
                             }
                         }
                     )
+                }
+
+                // Color theme picker — disabled when dynamic color (Monet) is on
+                val monetActive = viewModel.prefs.monet && dev.materii.gloom.util.supportsMonet
+                if (!monetActive) {
+                    val isDark = when (viewModel.prefs.theme) {
+                        Theme.DARK   -> true
+                        Theme.LIGHT  -> false
+                        Theme.SYSTEM -> isSystemInDarkTheme()
+                    }
+                    SettingsGroup {
+                        ColorThemePicker(
+                            current   = viewModel.prefs.colorTheme,
+                            darkTheme = isDark,
+                            onSelect  = { viewModel.prefs.colorTheme = it }
+                        )
+                    }
                 }
 
                 SettingsHeader(stringResource(Res.strings.appearance_av_shape))
