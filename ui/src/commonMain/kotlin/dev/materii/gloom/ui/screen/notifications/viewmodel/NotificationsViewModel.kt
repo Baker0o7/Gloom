@@ -9,7 +9,6 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import dev.materii.gloom.api.dto.notification.NotificationDto
 import dev.materii.gloom.api.repository.GithubRepository
 import dev.materii.gloom.api.util.fold
-import dev.materii.gloom.api.util.ifSuccessful
 import kotlinx.coroutines.launch
 
 class NotificationsViewModel(
@@ -32,12 +31,17 @@ class NotificationsViewModel(
         screenModelScope.launch {
             isLoading = true
             hasError = false
-            repo.getNotifications(all = true).ifSuccessful { items ->
-                notifications.clear()
-                notifications.addAll(items)
-            }
-            // If still empty after load and no items came back, surface the error state
-            if (notifications.isEmpty()) hasError = false // empty inbox is valid
+            repo.getNotifications(all = true).fold(
+                success = { items ->
+                    notifications.clear()
+                    notifications.addAll(items)
+                },
+                empty = {
+                    notifications.clear()
+                },
+                error = { hasError = true },
+                failure = { hasError = true }
+            )
             isLoading = false
         }
     }
@@ -45,12 +49,9 @@ class NotificationsViewModel(
     fun markRead(threadId: String) {
         screenModelScope.launch {
             repo.markThreadRead(threadId).fold(
-                success = {},
-                empty = {
-                    val index = notifications.indexOfFirst { it.id == threadId }
-                    if (index != -1) notifications[index] = notifications[index].copy(unread = false)
-                },
-                error = {},
+                success = { applyMarkRead(threadId) },
+                empty   = { applyMarkRead(threadId) },
+                error   = {},
                 failure = {}
             )
         }
@@ -59,15 +60,22 @@ class NotificationsViewModel(
     fun markAllRead() {
         screenModelScope.launch {
             repo.markAllRead().fold(
-                success = {},
-                empty = {
-                    val updated = notifications.map { it.copy(unread = false) }
-                    notifications.clear()
-                    notifications.addAll(updated)
-                },
-                error = {},
+                success = { applyMarkAllRead() },
+                empty   = { applyMarkAllRead() },
+                error   = {},
                 failure = {}
             )
         }
+    }
+
+    private fun applyMarkRead(threadId: String) {
+        val index = notifications.indexOfFirst { it.id == threadId }
+        if (index != -1) notifications[index] = notifications[index].copy(unread = false)
+    }
+
+    private fun applyMarkAllRead() {
+        val updated = notifications.map { it.copy(unread = false) }
+        notifications.clear()
+        notifications.addAll(updated)
     }
 }

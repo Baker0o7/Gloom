@@ -90,7 +90,7 @@ private val DraculaLightScheme = lightColorScheme(
     onPrimary             = Color(0xFFFFFFFF),
     primaryContainer      = Color(0xFFDADEF5),
     onPrimaryContainer    = Color(0xFF1A2050),
-    secondary             = Color(0xFF50FA7B).copy(alpha = 1f).let { Color(0xFF2DA44E) },
+    secondary             = Color(0xFF2DA44E),
     onSecondary           = Color(0xFFFFFFFF),
     secondaryContainer    = Color(0xFFD4EDDA),
     onSecondaryContainer  = Color(0xFF0D3B1E),

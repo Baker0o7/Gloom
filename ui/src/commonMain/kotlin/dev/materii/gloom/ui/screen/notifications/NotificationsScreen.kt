@@ -1,5 +1,8 @@
 package dev.materii.gloom.ui.screen.notifications
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,9 +24,11 @@ import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.CallMerge
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.DoneAll
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.Forum
 import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -36,6 +41,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -120,12 +126,16 @@ class NotificationsScreen : Tab {
                         }
                     }
 
+                    viewModel.hasError -> {
+                        ErrorState(onRetry = { viewModel.load() })
+                    }
+
                     viewModel.notifications.isEmpty() -> {
                         EmptyState()
                     }
 
                     else -> {
-                        // Renamed to `groupedItems` - avoids shadowing LazyListScope.items() DSL fn
+                        // Renamed to `groupedItems` to avoid shadowing LazyListScope.items() DSL
                         val grouped = viewModel.notifications
                             .groupBy { it.repository.fullName }
                             .toList()
@@ -157,6 +167,8 @@ class NotificationsScreen : Tab {
         }
     }
 }
+
+// ─── Sticky repo group header ─────────────────────────────────────────────────
 
 @Composable
 private fun RepoGroupHeader(
@@ -204,21 +216,27 @@ private fun RepoGroupHeader(
     }
 }
 
+// ─── Single notification row ──────────────────────────────────────────────────
+
 @Composable
 private fun NotificationItem(
     notification: NotificationDto,
     onClick: () -> Unit,
 ) {
+    val bgColor by animateColorAsState(
+        targetValue = if (notification.unread)
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.08f)
+        else
+            MaterialTheme.colorScheme.surface,
+        animationSpec = spring(stiffness = Spring.StiffnessMedium),
+        label = "notif_bg"
+    )
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .background(
-                if (notification.unread)
-                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.08f)
-                else
-                    MaterialTheme.colorScheme.surface
-            )
+            .background(bgColor)
             .padding(horizontal = 16.dp, vertical = 14.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.Top
@@ -260,7 +278,7 @@ private fun NotificationItem(
                         modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
                     )
                 }
-                // Parse outside composition - no try/catch around composables
+                // Parse outside composition to avoid try/catch around Text()
                 val timeText = remember(notification.updatedAt) {
                     runCatching {
                         getTimeSince(Instant.parse(notification.updatedAt))
@@ -276,6 +294,7 @@ private fun NotificationItem(
                 }
             }
         }
+        // Unread indicator dot
         if (notification.unread) {
             Box(
                 modifier = Modifier
@@ -287,6 +306,8 @@ private fun NotificationItem(
         }
     }
 }
+
+// ─── Empty state ──────────────────────────────────────────────────────────────
 
 @Composable
 private fun EmptyState() {
@@ -318,6 +339,45 @@ private fun EmptyState() {
         )
     }
 }
+
+// ─── Error state ──────────────────────────────────────────────────────────────
+
+@Composable
+private fun ErrorState(onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.ErrorOutline,
+            contentDescription = null,
+            modifier = Modifier.size(56.dp),
+            tint = MaterialTheme.colorScheme.error
+        )
+        Spacer(Modifier.height(16.dp))
+        Text(
+            text = "Couldn't load notifications",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = "Check your connection and try again.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.height(24.dp))
+        Button(onClick = onRetry) {
+            Text("Retry")
+        }
+    }
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 private fun String.toIcon(): ImageVector = when (this) {
     "Issue"       -> Icons.Outlined.BugReport
