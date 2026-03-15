@@ -40,5 +40,5 @@ fun GloomTheme(
 expect fun getColorSchemes(
     darkTheme: Boolean,
     dynamicColor: Boolean,
-    colorTheme: ColorTheme = ColorTheme.DEFAULT
+    colorTheme: ColorTheme
 ): Pair<ColorScheme, GloomColorScheme>
