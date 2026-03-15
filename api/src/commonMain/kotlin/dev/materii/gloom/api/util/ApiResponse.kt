@@ -51,3 +51,11 @@ fun <T> ApiResponse<T>.getOrNull() = when (this) {
     is ApiResponse.Error,
     is ApiResponse.Failure -> null
 }
+
+@Suppress("UNCHECKED_CAST")
+inline fun <T, R> ApiResponse<T>.transform(block: (T) -> R): ApiResponse<R> = when (this) {
+    is ApiResponse.Success -> ApiResponse.Success(block(data))
+    is ApiResponse.Empty   -> ApiResponse.Empty()
+    is ApiResponse.Error   -> this as ApiResponse.Error<R>
+    is ApiResponse.Failure -> this as ApiResponse.Failure<R>
+}

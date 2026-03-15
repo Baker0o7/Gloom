@@ -9,6 +9,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
@@ -20,6 +21,7 @@ import com.benasher44.uuid.uuid4
 import dev.materii.gloom.domain.manager.AuthManager
 import dev.materii.gloom.ui.component.Avatar
 import dev.materii.gloom.ui.component.navbar.LongClickableNavBarItem
+import dev.materii.gloom.ui.screen.chat.ChatFab
 import dev.materii.gloom.ui.screen.settings.component.account.AccountSwitcherSheet
 import dev.materii.gloom.ui.util.DimenUtil
 import dev.materii.gloom.ui.util.RootTab
@@ -34,25 +36,26 @@ class RootScreen: Screen {
 
     @Composable
     private fun Screen() {
-        var accountSwitcherVisible by remember {
-            mutableStateOf(false)
-        }
+        var accountSwitcherVisible by remember { mutableStateOf(false) }
 
         if (accountSwitcherVisible) {
-            AccountSwitcherSheet(
-                onDismiss = { accountSwitcherVisible = false }
-            )
+            AccountSwitcherSheet(onDismiss = { accountSwitcherVisible = false })
         }
 
         TabNavigator(tab = RootTab.HOME.tab) { nav ->
             Scaffold(
                 bottomBar = {
-                    TabBar(
-                        onProfileLongClick = { accountSwitcherVisible = true }
+                    TabBar(onProfileLongClick = { accountSwitcherVisible = true })
+                },
+                floatingActionButton = {
+                    ChatFab()
+                },
+            ) { paddingValues ->
+                Box(
+                    Modifier.padding(
+                        bottom = paddingValues.calculateBottomPadding() - DimenUtil.navBarPadding
                     )
-                }
-            ) {
-                Box(Modifier.padding(bottom = it.calculateBottomPadding() - DimenUtil.navBarPadding)) {
+                ) {
                     nav.current.Content()
                 }
             }

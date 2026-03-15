@@ -4,7 +4,9 @@ import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.cache.normalized.api.MemoryCacheFactory
 import com.apollographql.apollo.cache.normalized.normalizedCache
 import com.apollographql.apollo.network.http.LoggingInterceptor
+import dev.materii.gloom.api.BuildConfig
 import dev.materii.gloom.api.URLs
+import dev.materii.gloom.api.service.ChatApiService
 import dev.materii.gloom.api.service.GithubApiService
 import dev.materii.gloom.api.service.GithubAuthApiService
 import dev.materii.gloom.api.service.GraphQLService
@@ -37,6 +39,9 @@ fun serviceModule() = module {
             .build()
     }
 
+    fun provideChatApiService(httpService: HttpService): ChatApiService =
+        ChatApiService(httpService, BuildConfig.ANTHROPIC_API_KEY)
+
     single(named("Auth")) {
         provideHttpService(get(), get(named("Auth")))
     }
@@ -51,6 +56,10 @@ fun serviceModule() = module {
 
     single {
         provideApiService(get(named("Rest")), get())
+    }
+
+    single {
+        provideChatApiService(get(named("Rest")))
     }
 
     singleOf(::provideApolloClient)
