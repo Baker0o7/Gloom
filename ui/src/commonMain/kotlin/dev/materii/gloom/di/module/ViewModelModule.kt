@@ -17,6 +17,7 @@ import dev.materii.gloom.ui.screen.settings.viewmodel.SettingsViewModel
 import dev.materii.gloom.ui.screen.chat.viewmodel.ChatViewModel
 import dev.materii.gloom.ui.screen.notifications.viewmodel.NotificationsViewModel
 import org.koin.core.module.dsl.factoryOf
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 fun viewModelModule() = module {

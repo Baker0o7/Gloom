@@ -4,17 +4,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import cafe.adriel.voyager.core.model.ScreenModel
-import cafe.adriel.voyager.core.model.screenModelScope
+import com.benasher44.uuid.uuid4
 import dev.materii.gloom.api.dto.chat.ChatMessage
 import dev.materii.gloom.api.repository.ChatRepository
 import dev.materii.gloom.api.util.fold
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import java.util.UUID
 
+/**
+ * Plain class (not Voyager ScreenModel) so it can be a Koin singleton,
+ * keeping conversation alive across FAB open/close sessions.
+ */
 class ChatViewModel(
     private val chatRepository: ChatRepository,
-) : ScreenModel {
+) {
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     val messages = mutableStateListOf<ChatMessage>()
 
@@ -39,15 +47,15 @@ class ChatViewModel(
 
         // Snapshot history BEFORE appending the new user message
         val historySnapshot = messages.toList()
-        messages.add(ChatMessage(UUID.randomUUID().toString(), ChatMessage.Role.USER, text))
+        messages.add(ChatMessage(uuid4().toString(), ChatMessage.Role.USER, text))
 
-        screenModelScope.launch {
+        scope.launch {
             isThinking = true
             chatRepository.sendMessage(historySnapshot, text).fold(
                 success = { reply ->
                     if (reply.isNotBlank()) {
                         messages.add(
-                            ChatMessage(UUID.randomUUID().toString(), ChatMessage.Role.ASSISTANT, reply)
+                            ChatMessage(uuid4().toString(), ChatMessage.Role.ASSISTANT, reply)
                         )
                     }
                 },
@@ -67,5 +75,9 @@ class ChatViewModel(
 
     fun setContext(context: ChatRepository.GitHubContext) {
         chatRepository.context = context
+    }
+
+    fun dispose() {
+        scope.cancel()
     }
 }
