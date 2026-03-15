@@ -1,7 +1,6 @@
 package dev.materii.gloom.api.repository
 
 import dev.materii.gloom.api.dto.chat.ChatMessage
-import dev.materii.gloom.api.dto.chat.ChatMessageDto
 import dev.materii.gloom.api.service.ChatApiService
 import dev.materii.gloom.api.util.ApiResponse
 import dev.materii.gloom.api.util.transform
@@ -11,8 +10,8 @@ class ChatRepository(
 ) {
 
     /**
-     * Holds per-conversation context that can be set by any screen in Gloom.
-     * Cleared when a new conversation starts.
+     * GitHub context injected into every system prompt.
+     * Set by any screen before opening the chat.
      */
     data class GitHubContext(
         val repoOwner: String? = null,
@@ -29,70 +28,81 @@ class ChatRepository(
     var context: GitHubContext = GitHubContext()
 
     /**
-     * Send a message and return the assistant reply text.
+     * Send a user message and return the assistant reply as a plain String.
+     * History snapshot is taken before appending the new user message.
      */
     suspend fun sendMessage(
         history: List<ChatMessage>,
         userText: String,
-    ): ApiResponse<String> {
-        val messages = history.map {
-            ChatMessageDto(
-                role    = if (it.role == ChatMessage.Role.USER) "user" else "assistant",
-                content = it.content,
-            )
-        } + ChatMessageDto(role = "user", content = userText)
-
-        return service.chat(
-            messages     = messages,
+    ): ApiResponse<String> =
+        service.chat(
+            history      = history,
+            userText     = userText,
             systemPrompt = buildSystemPrompt(),
-            maxTokens    = 2048,
         ).transform { response ->
-            response.content
-                .filter { it.type == "text" }
-                .joinToString("") { it.text ?: "" }
-                .trim()
+            response.candidates
+                .firstOrNull()
+                ?.content
+                ?.parts
+                ?.joinToString("") { it.text }
+                ?.trim()
+                ?: ""
         }
-    }
 
-    private fun buildSystemPrompt(): String {
-        val ctx = context
-        val sb = StringBuilder()
+    /** True when a Gemini API key is present at build time. */
+    val hasApiKey: Boolean
+        get() = try {
+            dev.materii.gloom.api.BuildConfig.GEMINI_API_KEY.isNotBlank()
+        } catch (_: Exception) { false }
 
-        sb.append(
+    // ─── System prompt ────────────────────────────────────────────────────────
+
+    private fun buildSystemPrompt(): String = buildString {
+        append(
             """
-            You are Gloom AI, a helpful assistant built into the Gloom GitHub client app for Android.
-            You specialize in GitHub — repositories, issues, pull requests, code review, and open-source best practices.
-            Keep responses concise and use Markdown formatting where it helps readability.
-            When explaining code, be specific and actionable.
+            You are Gloom AI, an Android & Kotlin development assistant built into the Gloom GitHub client.
+            
+            Your strengths:
+            - Android development (Jetpack Compose, MVVM, Coroutines, Flow, Hilt/Koin, Room, Retrofit/Ktor)
+            - Kotlin idioms, extension functions, DSLs, coroutines, sealed classes
+            - GitHub workflows: issues, PRs, code review, CI/CD
+            - Explaining code, finding bugs, suggesting improvements
+            
+            Rules:
+            - Keep responses concise and direct
+            - For code, always specify the language in fenced blocks (```kotlin, ```xml, ```gradle etc.)
+            - Prefer Kotlin over Java in all examples
+            - When explaining code snippets, point out Kotlin-idiomatic improvements
             """.trimIndent()
         )
 
-        // Inject current context if available
+        val ctx = context
         if (ctx.repoOwner != null && ctx.repoName != null) {
-            sb.append("\n\n## Current Repository Context\n")
-            sb.append("Repository: **${ctx.repoOwner}/${ctx.repoName}**\n")
-            ctx.repoDescription?.let { sb.append("Description: $it\n") }
-            ctx.repoLanguage?.let   { sb.append("Primary language: $it\n") }
-            ctx.repoStars?.let      { sb.append("Stars: $it\n") }
-            ctx.openIssueCount?.let { sb.append("Open issues: $it\n") }
-            ctx.openPrCount?.let    { sb.append("Open PRs: $it\n") }
+            append("\n\n## Active Repository\n")
+            append("**${ctx.repoOwner}/${ctx.repoName}**")
+            ctx.repoDescription?.let { append(" — $it") }
+            append("\n")
+            ctx.repoLanguage?.let  { append("Language: $it\n") }
+            ctx.repoStars?.let     { append("Stars: $it\n") }
+            ctx.openIssueCount?.let { append("Open issues: $it\n") }
+            ctx.openPrCount?.let   { append("Open PRs: $it\n") }
         }
 
         if (ctx.currentFilePath != null) {
-            sb.append("\n\n## Currently Viewed File\n")
-            sb.append("Path: `${ctx.currentFilePath}`\n")
+            append("\n\n## Currently Viewed File\n")
+            append("`${ctx.currentFilePath}`\n")
             ctx.currentFileContent?.let { content ->
-                val preview = content.lines().take(120).joinToString("\n")
-                sb.append("Content:\n```\n$preview\n```\n")
+                val preview = content.lines().take(150).joinToString("\n")
+                val lang = when {
+                    ctx.currentFilePath.endsWith(".kt")    -> "kotlin"
+                    ctx.currentFilePath.endsWith(".xml")   -> "xml"
+                    ctx.currentFilePath.endsWith(".gradle") ||
+                    ctx.currentFilePath.endsWith(".kts")   -> "kotlin"
+                    ctx.currentFilePath.endsWith(".java")  -> "java"
+                    else                                   -> ""
+                }
+                append("```$lang\n$preview\n```\n")
             }
         }
-
-        return sb.toString()
     }
-
-    /** True if an Anthropic API key is configured at build time. */
-    val hasApiKey: Boolean
-        get() = try {
-            dev.materii.gloom.api.BuildConfig.ANTHROPIC_API_KEY.isNotBlank()
-        } catch (_: Exception) { false }
 }

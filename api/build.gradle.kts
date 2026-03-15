@@ -75,12 +75,12 @@ buildkonfig {
             "CLIENT_SECRET",
             "MDBlNzZmYzgzNTg4OTlkNzc5NWE0NmNkMDRhY2U4NjVmY2RjMDE2NQ=="
         )
-        // Add your Anthropic API key here to enable the AI chatbot
-        // Get one at: https://console.anthropic.com/settings/keys
+        // Gemini API key — FREE, no credit card required
+        // Get yours at: https://aistudio.google.com/app/apikey
         buildConfigField(
             FieldSpec.Type.STRING,
-            "ANTHROPIC_API_KEY",
-            System.getenv("ANTHROPIC_API_KEY") ?: ""
+            "GEMINI_API_KEY",
+            System.getenv("GEMINI_API_KEY") ?: ""
         )
     }
 }

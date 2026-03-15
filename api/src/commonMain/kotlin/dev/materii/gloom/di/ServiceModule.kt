@@ -40,7 +40,7 @@ fun serviceModule() = module {
     }
 
     fun provideChatApiService(httpService: HttpService): ChatApiService =
-        ChatApiService(httpService, BuildConfig.ANTHROPIC_API_KEY)
+        ChatApiService(httpService, BuildConfig.GEMINI_API_KEY)
 
     single(named("Auth")) {
         provideHttpService(get(), get(named("Auth")))
