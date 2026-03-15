@@ -22,7 +22,7 @@ import dev.icerock.moko.resources.compose.stringResource
 import dev.materii.gloom.Res
 import dev.materii.gloom.ui.component.toolbar.LargeToolbar
 import dev.materii.gloom.ui.screen.auth.LandingScreen
-import dev.materii.gloom.ui.screen.settings.about.AboutScreen
+import dev.materii.gloom.ui.screen.settings.AiSettingsScreen
 import dev.materii.gloom.ui.screen.settings.component.SettingsCategory
 import dev.materii.gloom.ui.screen.settings.component.SettingsGroup
 import dev.materii.gloom.ui.screen.settings.component.account.SignOutDialog
@@ -89,6 +89,15 @@ class SettingsScreen: Screen {
                         text = stringResource(Res.strings.settings_accounts),
                         subtext = stringResource(Res.strings.settings_accounts_description),
                         destination = ::AccountSettingsScreen
+                    )
+                }
+
+                SettingsGroup {
+                    SettingsCategory(
+                        icon = Icons.Outlined.AutoAwesome,
+                        text = "AI Settings",
+                        subtext = "Gemini API key & free tier info",
+                        destination = ::AiSettingsScreen
                     )
                 }
 

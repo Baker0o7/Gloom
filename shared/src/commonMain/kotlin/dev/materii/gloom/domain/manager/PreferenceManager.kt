@@ -17,6 +17,7 @@ class PreferenceManager(provider: SettingsProvider):
     var theme by enumPreference("theme", Theme.SYSTEM)
     var colorTheme by enumPreference("color_theme", ColorTheme.DEFAULT)
     var monet by booleanPreference("monet", dev.materii.gloom.util.supportsMonet)
+    var geminiApiKey by stringPreference("gemini_api_key", "")
 
     var userAvatarShape by enumPreference("user_avatar_shape", AvatarShape.Circle)
     var userAvatarRadius by intPreference("user_avatar_radius", 31)

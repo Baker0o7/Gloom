@@ -15,13 +15,13 @@ import kotlinx.coroutines.withContext
 
 class ChatApiService(
     private val client: HttpService,
-    private val apiKey: String,
+    // Build-time key (may be blank — user key from prefs takes priority)
+    val buildTimeApiKey: String,
 ) {
 
     companion object {
         // Gemini 2.0 Flash — completely free, no credit card required
         // Free tier: 15 RPM · 1 000 000 TPM · 1 500 RPD
-        // https://ai.google.dev/gemini-api/docs/models
         private const val MODEL    = "gemini-2.0-flash"
         private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
     }
@@ -30,8 +30,8 @@ class ChatApiService(
         history: List<ChatMessage>,
         userText: String,
         systemPrompt: String,
+        apiKey: String,
     ): ApiResponse<GeminiResponse> = withContext(Dispatchers.IO) {
-        // Build contents: past history + new user turn
         val contents = history.map { msg ->
             GeminiContent(
                 role  = if (msg.role == ChatMessage.Role.USER) "user" else "model",

@@ -3,16 +3,15 @@ package dev.materii.gloom.api.repository
 import dev.materii.gloom.api.dto.chat.ChatMessage
 import dev.materii.gloom.api.service.ChatApiService
 import dev.materii.gloom.api.util.ApiResponse
+import dev.materii.gloom.api.util.ApiError
 import dev.materii.gloom.api.util.transform
+import dev.materii.gloom.domain.manager.PreferenceManager
 
 class ChatRepository(
     private val service: ChatApiService,
+    private val prefs: PreferenceManager,
 ) {
 
-    /**
-     * GitHub context injected into every system prompt.
-     * Set by any screen before opening the chat.
-     */
     data class GitHubContext(
         val repoOwner: String? = null,
         val repoName: String? = null,
@@ -27,18 +26,27 @@ class ChatRepository(
 
     var context: GitHubContext = GitHubContext()
 
-    /**
-     * Send a user message and return the assistant reply as a plain String.
-     * History snapshot is taken before appending the new user message.
-     */
+    /** The active API key: user's saved key takes priority over the build-time key. */
+    val activeApiKey: String
+        get() = prefs.geminiApiKey.trim().ifBlank { service.buildTimeApiKey }
+
+    /** True when at least one key is available. */
+    val hasApiKey: Boolean
+        get() = activeApiKey.isNotBlank()
+
     suspend fun sendMessage(
         history: List<ChatMessage>,
         userText: String,
-    ): ApiResponse<String> =
-        service.chat(
+    ): ApiResponse<String> {
+        val key = activeApiKey
+        if (key.isBlank()) {
+            return ApiResponse.Error(ApiError(io.ktor.http.HttpStatusCode.Unauthorized, "No Gemini API key configured"))
+        }
+        return service.chat(
             history      = history,
             userText     = userText,
             systemPrompt = buildSystemPrompt(),
+            apiKey       = key,
         ).transform { response ->
             response.candidates
                 .firstOrNull()
@@ -48,14 +56,7 @@ class ChatRepository(
                 ?.trim()
                 ?: ""
         }
-
-    /** True when a Gemini API key is present at build time. */
-    val hasApiKey: Boolean
-        get() = try {
-            dev.materii.gloom.api.BuildConfig.GEMINI_API_KEY.isNotBlank()
-        } catch (_: Exception) { false }
-
-    // ─── System prompt ────────────────────────────────────────────────────────
+    }
 
     private fun buildSystemPrompt(): String = buildString {
         append(
@@ -94,12 +95,10 @@ class ChatRepository(
             ctx.currentFileContent?.let { content ->
                 val preview = content.lines().take(150).joinToString("\n")
                 val lang = when {
-                    ctx.currentFilePath.endsWith(".kt")    -> "kotlin"
-                    ctx.currentFilePath.endsWith(".xml")   -> "xml"
-                    ctx.currentFilePath.endsWith(".gradle") ||
-                    ctx.currentFilePath.endsWith(".kts")   -> "kotlin"
-                    ctx.currentFilePath.endsWith(".java")  -> "java"
-                    else                                   -> ""
+                    ctx.currentFilePath.endsWith(".kt")  || ctx.currentFilePath.endsWith(".kts") -> "kotlin"
+                    ctx.currentFilePath.endsWith(".xml")  -> "xml"
+                    ctx.currentFilePath.endsWith(".java") -> "java"
+                    else                                  -> ""
                 }
                 append("```$lang\n$preview\n```\n")
             }

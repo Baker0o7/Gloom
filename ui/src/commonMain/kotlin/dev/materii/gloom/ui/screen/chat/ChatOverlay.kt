@@ -149,6 +149,7 @@ private fun ChatSheet(viewModel: ChatViewModel, onDismiss: () -> Unit) {
                 isThinking = viewModel.isThinking,
                 snackbar   = snackbarHost,
                 modifier   = Modifier.weight(1f),
+                hasApiKey  = viewModel.hasApiKey,
             )
 
             // Error
@@ -211,11 +212,17 @@ private fun MessageList(
     messages: List<ChatMessage>,
     isThinking: Boolean,
     snackbar: SnackbarHostState,
+    hasApiKey: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
     LaunchedEffect(messages.size, isThinking) {
         if (messages.isNotEmpty()) listState.animateScrollToItem(messages.size - 1)
+    }
+
+    if (!hasApiKey) {
+        NoKeyState(modifier = modifier)
+        return
     }
 
     LazyColumn(
@@ -537,6 +544,39 @@ private fun InputRow(text: String, onTextChange: (String) -> Unit, onSend: () ->
         ) {
             Icon(Icons.Outlined.Send, "Send")
         }
+    }
+}
+
+// ─── No API key state ─────────────────────────────────────────────────────────
+
+@Composable
+private fun NoKeyState(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Icon(
+            Icons.Outlined.AutoAwesome,
+            contentDescription = null,
+            tint     = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(40.dp),
+        )
+        Spacer(Modifier.height(16.dp))
+        Text(
+            "Set up Gloom AI",
+            style      = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            "Add a free Gemini API key in Settings → AI Settings to enable the assistant.\n\nGet yours free at aistudio.google.com/app/apikey",
+            style     = MaterialTheme.typography.bodySmall,
+            color     = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 
