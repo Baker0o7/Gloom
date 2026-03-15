@@ -2,7 +2,16 @@ package dev.materii.gloom.ui.screen.notifications
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -15,7 +24,16 @@ import androidx.compose.material.icons.outlined.DoneAll
 import androidx.compose.material.icons.outlined.Forum
 import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -24,7 +42,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -91,6 +111,7 @@ class NotificationsScreen : Tab {
                 modifier = Modifier
                     .padding(pv)
                     .fillMaxSize()
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
                 when {
                     viewModel.isLoading && viewModel.notifications.isEmpty() -> {
@@ -104,21 +125,24 @@ class NotificationsScreen : Tab {
                     }
 
                     else -> {
-                        // Group by repo for cleaner visual hierarchy
+                        // Renamed to `groupedItems` - avoids shadowing LazyListScope.items() DSL fn
                         val grouped = viewModel.notifications
                             .groupBy { it.repository.fullName }
                             .toList()
 
                         LazyColumn(Modifier.fillMaxSize()) {
-                            grouped.forEach { (repoName, items) ->
+                            grouped.forEach { (repoName, groupedItems) ->
                                 stickyHeader(key = "header_$repoName") {
                                     RepoGroupHeader(
                                         repoName = repoName,
-                                        avatarUrl = items.first().repository.owner.avatarUrl,
-                                        unreadCount = items.count { it.unread }
+                                        avatarUrl = groupedItems.first().repository.owner.avatarUrl,
+                                        unreadCount = groupedItems.count { it.unread }
                                     )
                                 }
-                                items(items, key = { it.id }) { notification ->
+                                items(
+                                    items = groupedItems,
+                                    key = { it.id }
+                                ) { notification ->
                                     NotificationItem(
                                         notification = notification,
                                         onClick = { viewModel.markRead(notification.id) }
@@ -133,8 +157,6 @@ class NotificationsScreen : Tab {
         }
     }
 }
-
-// ─── Sticky repo header ───────────────────────────────────────────────────────
 
 @Composable
 private fun RepoGroupHeader(
@@ -182,8 +204,6 @@ private fun RepoGroupHeader(
     }
 }
 
-// ─── Single notification row ──────────────────────────────────────────────────
-
 @Composable
 private fun NotificationItem(
     notification: NotificationDto,
@@ -214,7 +234,6 @@ private fun NotificationItem(
                 .padding(top = 2.dp)
                 .size(20.dp)
         )
-
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -230,7 +249,6 @@ private fun NotificationItem(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Reason chip
                 Surface(
                     shape = MaterialTheme.shapes.extraSmall,
                     color = MaterialTheme.colorScheme.secondaryContainer
@@ -242,9 +260,11 @@ private fun NotificationItem(
                         modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
                     )
                 }
-                // Time
+                // Parse outside composition - no try/catch around composables
                 val timeText = remember(notification.updatedAt) {
-                    runCatching { getTimeSince(Instant.parse(notification.updatedAt)) }.getOrNull()
+                    runCatching {
+                        getTimeSince(Instant.parse(notification.updatedAt))
+                    }.getOrNull()
                 }
                 if (timeText != null) {
                     Text(
@@ -256,8 +276,6 @@ private fun NotificationItem(
                 }
             }
         }
-
-        // Unread dot
         if (notification.unread) {
             Box(
                 modifier = Modifier
@@ -270,12 +288,12 @@ private fun NotificationItem(
     }
 }
 
-// ─── Empty state ──────────────────────────────────────────────────────────────
-
 @Composable
 private fun EmptyState() {
     Column(
-        modifier = Modifier.fillMaxSize().padding(32.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -296,12 +314,10 @@ private fun EmptyState() {
             text = "Mentions, reviews, and other activity\nwill show up here.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            textAlign = TextAlign.Center
         )
     }
 }
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 private fun String.toIcon(): ImageVector = when (this) {
     "Issue"       -> Icons.Outlined.BugReport
