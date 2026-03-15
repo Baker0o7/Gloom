@@ -47,9 +47,6 @@ class RootScreen: Screen {
                 bottomBar = {
                     TabBar(onProfileLongClick = { accountSwitcherVisible = true })
                 },
-                floatingActionButton = {
-                    ChatFab()
-                },
             ) { paddingValues ->
                 Box(
                     Modifier.padding(
@@ -57,6 +54,12 @@ class RootScreen: Screen {
                     )
                 ) {
                     nav.current.Content()
+                    // ChatFab as overlay so it doesn't conflict with per-screen FABs
+                    ChatFab(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 16.dp, bottom = 88.dp)
+                    )
                 }
             }
         }
