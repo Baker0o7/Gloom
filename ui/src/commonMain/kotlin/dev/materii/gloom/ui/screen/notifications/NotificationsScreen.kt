@@ -18,6 +18,7 @@ import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -242,14 +243,17 @@ private fun NotificationItem(
                     )
                 }
                 // Time
-                try {
+                val timeText = remember(notification.updatedAt) {
+                    runCatching { getTimeSince(Instant.parse(notification.updatedAt)) }.getOrNull()
+                }
+                if (timeText != null) {
                     Text(
-                        text = getTimeSince(Instant.parse(notification.updatedAt)),
+                        text = timeText,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 11.sp
                     )
-                } catch (_: Exception) {}
+                }
             }
         }
 

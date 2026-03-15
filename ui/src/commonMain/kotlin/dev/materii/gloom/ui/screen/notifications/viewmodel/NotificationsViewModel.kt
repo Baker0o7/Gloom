@@ -8,6 +8,7 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import dev.materii.gloom.api.dto.notification.NotificationDto
 import dev.materii.gloom.api.repository.GithubRepository
+import dev.materii.gloom.api.util.fold
 import dev.materii.gloom.api.util.ifSuccessful
 import kotlinx.coroutines.launch
 
@@ -43,22 +44,30 @@ class NotificationsViewModel(
 
     fun markRead(threadId: String) {
         screenModelScope.launch {
-            repo.markThreadRead(threadId).ifSuccessful {
-                val index = notifications.indexOfFirst { it.id == threadId }
-                if (index != -1) {
-                    notifications[index] = notifications[index].copy(unread = false)
-                }
-            }
+            repo.markThreadRead(threadId).fold(
+                success = {},
+                empty = {
+                    val index = notifications.indexOfFirst { it.id == threadId }
+                    if (index != -1) notifications[index] = notifications[index].copy(unread = false)
+                },
+                error = {},
+                failure = {}
+            )
         }
     }
 
     fun markAllRead() {
         screenModelScope.launch {
-            repo.markAllRead().ifSuccessful {
-                val updated = notifications.map { it.copy(unread = false) }
-                notifications.clear()
-                notifications.addAll(updated)
-            }
+            repo.markAllRead().fold(
+                success = {},
+                empty = {
+                    val updated = notifications.map { it.copy(unread = false) }
+                    notifications.clear()
+                    notifications.addAll(updated)
+                },
+                error = {},
+                failure = {}
+            )
         }
     }
 }
