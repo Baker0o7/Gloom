@@ -1,6 +1,5 @@
 package dev.materii.gloom.ui.screen.notifications
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,7 +8,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.BugReport
+import androidx.compose.material.icons.outlined.CallMerge
+import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.DoneAll
+import androidx.compose.material.icons.outlined.Forum
+import androidx.compose.material.icons.outlined.NewReleases
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -54,7 +59,7 @@ class NotificationsScreen : Tab {
     @Composable
     override fun Content() = Screen()
 
-    @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     private fun Screen() {
         val viewModel: NotificationsViewModel = koinScreenModel()
@@ -296,9 +301,9 @@ private fun EmptyState() {
 
 private fun String.toIcon(): ImageVector = when (this) {
     "Issue"       -> Icons.Outlined.BugReport
-    "PullRequest" -> Icons.Outlined.MergeType
+    "PullRequest" -> Icons.Outlined.CallMerge
     "Release"     -> Icons.Outlined.NewReleases
-    "Commit"      -> Icons.Outlined.Commit
+    "Commit"      -> Icons.Outlined.Code
     "Discussion"  -> Icons.Outlined.Forum
     else          -> Icons.Outlined.Notifications
 }

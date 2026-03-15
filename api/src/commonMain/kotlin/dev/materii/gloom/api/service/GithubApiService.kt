@@ -5,7 +5,7 @@ import dev.materii.gloom.api.dto.notification.NotificationDto
 import dev.materii.gloom.api.util.ApiResponse
 import dev.materii.gloom.domain.manager.AuthManager
 import io.ktor.client.request.header
-import io.ktor.client.request.parameter
+import io.ktor.client.request.url
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import kotlinx.coroutines.Dispatchers
@@ -25,10 +25,7 @@ class GithubApiService(
     ): ApiResponse<List<NotificationDto>> =
         withContext(Dispatchers.IO) {
             client.request {
-                url("${URLs.BASE_URL}/notifications")
-                parameter("all", all)
-                parameter("page", page)
-                parameter("per_page", perPage)
+                url("${URLs.BASE_URL}/notifications?all=$all&page=$page&per_page=$perPage")
                 header(HttpHeaders.Authorization, authHeader())
                 method = HttpMethod.Get
             }
