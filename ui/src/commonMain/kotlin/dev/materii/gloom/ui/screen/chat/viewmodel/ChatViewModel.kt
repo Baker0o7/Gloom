@@ -35,9 +35,7 @@ class ChatViewModel(
     var inputText by mutableStateOf("")
 
     val hasApiKey: Boolean
-        get() = try {
-            dev.materii.gloom.api.BuildConfig.ANTHROPIC_API_KEY.isNotBlank()
-        } catch (_: Exception) { false }
+        get() = chatRepository.hasApiKey
 
     fun sendMessage() {
         val text = inputText.trim()

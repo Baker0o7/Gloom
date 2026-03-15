@@ -89,4 +89,10 @@ class ChatRepository(
 
         return sb.toString()
     }
+
+    /** True if an Anthropic API key is configured at build time. */
+    val hasApiKey: Boolean
+        get() = try {
+            dev.materii.gloom.api.BuildConfig.ANTHROPIC_API_KEY.isNotBlank()
+        } catch (_: Exception) { false }
 }
