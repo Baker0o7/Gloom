@@ -39,7 +39,10 @@ class ExploreViewModel(
     fun loadTrending() {
         screenModelScope.launch {
             isLoading = true
-            graphQLRepository.getTrending(trendingPeriod.toApi()).ifSuccessful { trending ->
+            graphQLRepository.getTrending(
+                period   = trendingPeriod.toApi(),
+                language = "Kotlin",
+            ).ifSuccessful { trending ->
                 trendingRepos.clear()
                 trendingRepos.addAll(trending)
             }

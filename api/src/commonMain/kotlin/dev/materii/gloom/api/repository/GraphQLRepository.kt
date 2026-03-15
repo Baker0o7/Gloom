@@ -71,7 +71,10 @@ class GraphQLRepository(
 
     suspend fun getFeed(cursor: String? = null) = service.getFeed(cursor)
 
-    suspend fun getTrending(period: TrendingPeriod = TrendingPeriod.DAILY) = service.getTrending(period).transform {
+    suspend fun getTrending(
+        period: TrendingPeriod = TrendingPeriod.DAILY,
+        language: String? = null,
+    ) = service.getTrending(period, language).transform {
         it.trendingRepositories?.filterNotNull()?.map { it.trendingRepository } ?: emptyList()
     }
 
