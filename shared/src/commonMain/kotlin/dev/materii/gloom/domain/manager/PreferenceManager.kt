@@ -4,6 +4,7 @@ import dev.materii.gloom.domain.manager.base.BasePreferenceManager
 import dev.materii.gloom.domain.manager.base.booleanPreference
 import dev.materii.gloom.domain.manager.base.enumPreference
 import dev.materii.gloom.domain.manager.base.intPreference
+import dev.materii.gloom.domain.manager.base.stringPreference
 import dev.materii.gloom.domain.manager.enums.AppIcon
 import dev.materii.gloom.domain.manager.enums.AvatarShape
 import dev.materii.gloom.domain.manager.enums.Theme
