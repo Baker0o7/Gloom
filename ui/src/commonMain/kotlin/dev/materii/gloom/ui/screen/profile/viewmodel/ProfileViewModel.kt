@@ -67,17 +67,18 @@ class ProfileViewModel(
     }
 
     fun toggleFollowing() {
-        if (user?.id == null) return
-        val isFollowing = user?.isFollowing
+        val currentUser = user ?: return
+        val userId = currentUser.id ?: return
+        val isFollowing = currentUser.isFollowing
 
         screenModelScope.launch {
             if (isFollowing == false)
-                gqlRepo.followUser(user!!.id!!).ifSuccessful {
-                    user = user!!.copy(isFollowing = it.first)
+                gqlRepo.followUser(userId).ifSuccessful {
+                    user = currentUser.copy(isFollowing = it.first)
                 }
             else
-                gqlRepo.unfollowUser(user!!.id!!).ifSuccessful {
-                    user = user!!.copy(isFollowing = it.first)
+                gqlRepo.unfollowUser(userId).ifSuccessful {
+                    user = currentUser.copy(isFollowing = it.first)
                 }
         }
     }
