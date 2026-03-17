@@ -23,6 +23,7 @@ import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.benasher44.uuid.uuid4
 import dev.icerock.moko.resources.compose.stringResource
 import dev.materii.gloom.Res
+import dev.materii.gloom.ui.component.ErrorMessage
 import dev.materii.gloom.ui.screen.explorer.DirectoryListingScreen
 import dev.materii.gloom.ui.screen.repo.CommitsScreen
 import dev.materii.gloom.ui.screen.repo.viewmodel.RepoCodeViewModel
@@ -101,7 +102,11 @@ class CodeTab(
                 is RepoCodeViewModel.UiState.Loading -> {}
 
                 is RepoCodeViewModel.UiState.Error   -> {
-                    // TODO: Show error state
+                    ErrorMessage(
+                        message = stringResource(Res.strings.error_loading_content),
+                        onRetryClick = viewModel::load,
+                        modifier = Modifier.fillMaxSize()
+                    )
                 }
             }
         }

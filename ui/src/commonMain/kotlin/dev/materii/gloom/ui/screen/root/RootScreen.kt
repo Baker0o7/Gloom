@@ -74,14 +74,22 @@ class RootScreen: Screen {
                     onLongClick = { if (it == RootTab.PROFILE) onProfileLongClick() },
                     icon = {
                         if (authManager.accounts.size > 1 && it == RootTab.PROFILE) {
-                            Avatar(
-                                url = authManager.currentAccount!!.avatarUrl,
-                                contentDescription = it.tab.options.title,
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clip(CircleShape)
-                                    .alpha(if (navigator.current == it.tab) 1f else 0.75f)
-                            )
+                            val avatarUrl = authManager.currentAccount?.avatarUrl
+                            if (avatarUrl != null) {
+                                Avatar(
+                                    url = avatarUrl,
+                                    contentDescription = it.tab.options.title,
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clip(CircleShape)
+                                        .alpha(if (navigator.current == it.tab) 1f else 0.75f)
+                                )
+                            } else {
+                                Icon(
+                                    painter = it.tab.options.icon!!,
+                                    contentDescription = it.tab.options.title
+                                )
+                            }
                         } else {
                             Icon(
                                 painter = it.tab.options.icon!!,

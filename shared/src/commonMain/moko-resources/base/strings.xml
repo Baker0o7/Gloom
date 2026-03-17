@@ -30,6 +30,8 @@
 
     <!-- Errors -->
     <string name="error_release_load">Couldn\'t load release</string>
+    <string name="error_loading_content">Couldn\'t load content</string>
+    <string name="error_network">Network error. Please check your connection.</string>
     <!--        -->
 
     <!-- Titles -->

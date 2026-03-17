@@ -10,6 +10,7 @@ import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.header
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
@@ -33,7 +34,9 @@ fun httpModule() = module {
             install(HttpRequestRetry) {
                 maxRetries = 5
                 retryIf { _, httpResponse ->
-                    !httpResponse.status.isSuccess()
+                    // Don't retry 4xx client errors (401, 403, 404, etc.)
+                    val status = httpResponse.status
+                    !status.isSuccess() && status.value !in 400..499
                 }
                 retryOnExceptionIf { _, error ->
                     error is HttpRequestTimeoutException
@@ -62,7 +65,9 @@ fun httpModule() = module {
             install(HttpRequestRetry) {
                 maxRetries = 5
                 retryIf { _, httpResponse ->
-                    !httpResponse.status.isSuccess()
+                    // Don't retry 4xx client errors (401, 403, 404, etc.)
+                    val status = httpResponse.status
+                    !status.isSuccess() && status.value !in 400..499
                 }
                 retryOnExceptionIf { _, error ->
                     error is HttpRequestTimeoutException
