@@ -90,6 +90,13 @@ class SettingsScreen: Screen {
                         subtext = stringResource(Res.strings.settings_accounts_description),
                         destination = ::AccountSettingsScreen
                     )
+
+                    SettingsCategory(
+                        icon = Icons.Outlined.AutoAwesome,
+                        text = stringResource(Res.strings.settings_gemini),
+                        subtext = stringResource(Res.strings.settings_gemini_description),
+                        destination = ::GeminiSettingsScreen
+                    )
                 }
 
                 SettingsGroup {

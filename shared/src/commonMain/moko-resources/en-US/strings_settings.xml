@@ -73,6 +73,15 @@
     <string name="dev_alert_action_show_alert">Show alert</string>
     <string name="dev_alert_action_fill_queue">Fill queue</string>
     <!--             -->
+    <!-- Gemini -->
+    <string name="settings_gemini">Gemini AI</string>
+    <string name="settings_gemini_description">Configure Gemini API key for AI features</string>
+    <string name="gemini_api_key">API Key</string>
+    <string name="gemini_api_key_description">Enter your Gemini API key to enable AI-powered features</string>
+    <string name="gemini_api_key_placeholder">Enter your API key</string>
+    <string name="gemini_api_key_saved">API key saved</string>
+    <string name="gemini_api_key_cleared">API key cleared</string>
+    <!--       -->
     <!-- About -->
     <string name="settings_about">About</string>
     <string name="settings_libraries">Libraries</string>
