@@ -48,6 +48,9 @@ class RootScreen: Screen {
         }
 
         TabNavigator(tab = RootTab.HOME.tab) { nav ->
+            // Hide FAB when on AI screen
+            val showFab = nav.current != RootTab.AI.tab
+            
             Scaffold(
                 bottomBar = {
                     TabBar(
@@ -55,15 +58,17 @@ class RootScreen: Screen {
                     )
                 },
                 floatingActionButton = {
-                    // AI Floating Action Button
-                    FloatingActionButton(
-                        onClick = { nav.current = RootTab.AI.tab },
-                        shape = CircleShape
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.AutoAwesome,
-                            contentDescription = "AI Assistant"
-                        )
+                    // AI Floating Action Button - hidden when on AI screen
+                    if (showFab) {
+                        FloatingActionButton(
+                            onClick = { nav.current = RootTab.AI.tab },
+                            shape = CircleShape
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.AutoAwesome,
+                                contentDescription = "AI Assistant"
+                            )
+                        }
                     }
                 }
             ) {
