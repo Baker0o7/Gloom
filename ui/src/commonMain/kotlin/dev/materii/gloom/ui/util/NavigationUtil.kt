@@ -5,7 +5,6 @@ import cafe.adriel.voyager.core.model.ScreenModelStore
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.tab.Tab
-import dev.materii.gloom.ui.screen.ai.AIScreen
 import dev.materii.gloom.ui.screen.explore.ExploreScreen
 import dev.materii.gloom.ui.screen.home.HomeScreen
 import dev.materii.gloom.ui.screen.notifications.NotificationsScreen
@@ -30,7 +29,6 @@ object NavigationUtil {
         ScreenModelStore.onDisposeNavigator(NotificationsScreen().key)
         ScreenModelStore.onDisposeNavigator(ProfileScreen().key)
         ScreenModelStore.onDisposeNavigator(ProfileTab().key)
-        ScreenModelStore.onDisposeNavigator(AIScreen().key)
     }
 
 }
@@ -39,7 +37,6 @@ enum class RootTab(val tab: Tab) {
 
     HOME(HomeScreen()),
     EXPLORE(ExploreScreen()),
-    AI(AIScreen()),
     NOTIFICATIONS(NotificationsScreen()),
     PROFILE(ProfileTab())
 
