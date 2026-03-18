@@ -26,7 +26,7 @@ class AIService(
         private const val GITHUB_MODELS_BASE_URL = "https://models.inference.ai.azure.com"
         private const val DEFAULT_MODEL = "gpt-4o-mini"
 
-        // Available free models on GitHub Models
+        // Available free models on GitHub Models (exact model IDs)
         val AVAILABLE_MODELS = listOf(
             ModelInfo("gpt-4o-mini", "GPT-4o Mini", "OpenAI", "Fast and efficient for coding tasks"),
             ModelInfo("gpt-4o", "GPT-4o", "OpenAI", "Most capable model for complex tasks"),
@@ -67,22 +67,38 @@ class AIService(
                 maxTokens = maxTokens
             )
 
+            val requestBodyString = json.encodeToString(requestBody)
+            println("AI Service: Sending request to $GITHUB_MODELS_BASE_URL/chat/completions")
+            println("AI Service: Model = $model")
+            println("AI Service: Messages count = ${messages.size}")
+
             val response = httpClient.post("$GITHUB_MODELS_BASE_URL/chat/completions") {
                 header(HttpHeaders.Authorization, "Bearer $token")
-                header(HttpHeaders.ContentType, ContentType.Application.Json)
-                setBody(json.encodeToString(requestBody))
+                header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                header(HttpHeaders.Accept, ContentType.Application.Json.toString())
+                setBody(requestBodyString)
             }
+
+            println("AI Service: Response status = ${response.status}")
 
             if (response.status.isSuccess()) {
                 val body = response.bodyAsText()
-                ApiResponse.Success(json.decodeFromString<ChatCompletionResponse>(body))
+                println("AI Service: Response body length = ${body.length}")
+                try {
+                    ApiResponse.Success(json.decodeFromString<ChatCompletionResponse>(body))
+                } catch (e: Exception) {
+                    println("AI Service: Parse error - ${e.message}")
+                    ApiResponse.Error(ApiError(response.status, "Failed to parse response: ${e.message}"))
+                }
             } else {
                 val errorBody = response.bodyAsText()
-                ApiResponse.Error(ApiError(response.status, errorBody))
+                println("AI Service: Error response = $errorBody")
+                ApiResponse.Error(ApiError(response.status, errorBody.ifEmpty { "HTTP ${response.status}" }))
             }
         } catch (e: Exception) {
+            println("AI Service: Exception - ${e.javaClass.simpleName}: ${e.message}")
             e.printStackTrace()
-            ApiResponse.Failure(ApiFailure(e, null))
+            ApiResponse.Failure(ApiFailure(e, e.message))
         }
     }
 

@@ -86,17 +86,33 @@ class AIViewModel(
                     if (assistantMessage != null) {
                         _messages.add(assistantMessage)
                     } else {
-                        error = "No response received from AI"
+                        error = "No response received from AI. Please try again."
                     }
                 }
                 is ApiResponse.Error -> {
-                    error = "Error: ${result.error.message}"
+                    val errorMsg = result.error.message ?: "Unknown error"
+                    error = when {
+                        errorMsg.contains("401", ignoreCase = true) -> "Authentication failed. Please check your GitHub token has the right permissions."
+                        errorMsg.contains("403", ignoreCase = true) -> "Access denied. Please ensure your token has 'model' permissions."
+                        errorMsg.contains("404", ignoreCase = true) -> "API endpoint not found. Please update the app."
+                        errorMsg.contains("429", ignoreCase = true) -> "Rate limit exceeded. Please wait a moment and try again."
+                        else -> "Error: $errorMsg"
+                    }
                 }
                 is ApiResponse.Failure -> {
-                    error = "Failed: ${result.error.message}"
+                    val exception = result.error
+                    error = when {
+                        exception.message?.contains("Unable to resolve host", ignoreCase = true) == true -> 
+                            "No internet connection. Please check your network."
+                        exception.message?.contains("timeout", ignoreCase = true) == true -> 
+                            "Request timed out. Please try again."
+                        exception.message?.contains("SSL", ignoreCase = true) == true -> 
+                            "SSL error. Please check your connection."
+                        else -> "Network error: ${exception.message ?: "Unknown error"}"
+                    }
                 }
                 is ApiResponse.Empty -> {
-                    error = "Empty response received"
+                    error = "Empty response received from server."
                 }
             }
         }

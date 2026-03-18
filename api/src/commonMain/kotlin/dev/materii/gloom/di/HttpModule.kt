@@ -83,6 +83,31 @@ fun httpModule() = module {
         }
     }
 
+    fun provideAIClient(
+        json: Json,
+        logger: Logger
+    ): HttpClient {
+        return HttpClient(CIO) {
+            install(HttpRequestRetry) {
+                maxRetries = 3
+                retryIf { _, httpResponse ->
+                    val status = httpResponse.status
+                    !status.isSuccess() && status.value !in 400..499
+                }
+                retryOnExceptionIf { _, error ->
+                    error is HttpRequestTimeoutException
+                }
+                delayMillis { retry ->
+                    retry * 1000L
+                }
+            }
+            install(ContentNegotiation) {
+                json(json)
+            }
+            installLogging(logger)
+        }
+    }
+
     single {
         Json {
             ignoreUnknownKeys = true
@@ -95,6 +120,10 @@ fun httpModule() = module {
 
     single(named("Rest")) {
         provideRestClient(get(), get())
+    }
+
+    single(named("AI")) {
+        provideAIClient(get(), get())
     }
 
 }
