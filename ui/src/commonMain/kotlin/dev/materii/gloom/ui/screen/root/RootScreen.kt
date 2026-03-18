@@ -1,6 +1,7 @@
 package dev.materii.gloom.ui.screen.root
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -60,8 +61,12 @@ class RootScreen: Screen {
                 floatingActionButton = {
                     AIFloatingButton()
                 }
-            ) {
-                Box(Modifier.padding(bottom = it.calculateBottomPadding() - DimenUtil.navBarPadding)) {
+            ) { paddingValues ->
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                ) {
                     nav.current.Content()
                 }
             }
