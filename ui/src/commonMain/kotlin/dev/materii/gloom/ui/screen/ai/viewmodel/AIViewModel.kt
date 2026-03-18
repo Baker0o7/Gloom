@@ -86,17 +86,22 @@ class AIViewModel(
                     if (assistantMessage != null) {
                         _messages.add(assistantMessage)
                     } else {
-                        error = "No response received from AI"
+                        error = "No response received from AI. Please try again."
                     }
                 }
                 is ApiResponse.Error -> {
-                    error = "Error: ${result.error.message}"
+                    val errorMsg = result.error.message ?: "Unknown error"
+                    error = when {
+                        errorMsg.contains("401", ignoreCase = true) -> "Authentication error. Please sign in again."
+                        errorMsg.contains("429", ignoreCase = true) -> "Rate limited. Please wait a moment and try again."
+                        else -> "Error: $errorMsg"
+                    }
                 }
                 is ApiResponse.Failure -> {
-                    error = "Failed: ${result.error.message}"
+                    error = "Network error: ${result.error.message ?: "Please check your connection"}"
                 }
                 is ApiResponse.Empty -> {
-                    error = "Empty response received"
+                    error = "Empty response received. Please try again."
                 }
             }
         }

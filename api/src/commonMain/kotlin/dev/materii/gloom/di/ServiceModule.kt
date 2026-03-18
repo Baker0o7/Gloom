@@ -61,7 +61,7 @@ fun serviceModule() = module {
     }
 
     single {
-        provideAIService(get(named("Rest")), get(), get())
+        provideAIService(get(named("AI")), get(), get())
     }
 
     singleOf(::provideApolloClient)
