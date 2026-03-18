@@ -13,8 +13,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 /**
- * AI Service for GitHub Models API
- * Uses the GitHub token for authentication - completely free for limited use
+ * AI Service - Free AI chat
  */
 class AIService(
     private val httpClient: HttpClient,
@@ -23,17 +22,16 @@ class AIService(
 ) {
 
     companion object {
-        private const val GITHUB_MODELS_BASE_URL = "https://models.inference.ai.azure.com"
-        private const val DEFAULT_MODEL = "gpt-4o-mini"
+        private const val API_URL = "https://api.openai-proxy.org/v1/chat/completions"
+        private const val DEFAULT_MODEL = "gpt-3.5-turbo"
 
-        // Available free models on GitHub Models
+        // Available models
         val AVAILABLE_MODELS = listOf(
-            ModelInfo("gpt-4o-mini", "GPT-4o Mini", "OpenAI", "Fast and efficient for coding tasks"),
-            ModelInfo("gpt-4o", "GPT-4o", "OpenAI", "Most capable model for complex tasks"),
-            ModelInfo("Llama-3.3-70B-Instruct", "Llama 3.3 70B", "Meta", "Open-source powerful model"),
-            ModelInfo("Phi-4-mini-instruct", "Phi-4 Mini", "Microsoft", "Lightweight reasoning model"),
-            ModelInfo("Mistral-large-2411", "Mistral Large", "Mistral AI", "European AI model"),
-            ModelInfo("Codestral-2501", "Codestral", "Mistral AI", "Optimized for code generation")
+            ModelInfo("gpt-3.5-turbo", "GPT-3.5 Turbo", "OpenAI", "Fast and efficient"),
+            ModelInfo("gpt-4", "GPT-4", "OpenAI", "Most capable model"),
+            ModelInfo("gpt-4-turbo", "GPT-4 Turbo", "OpenAI", "Fast GPT-4"),
+            ModelInfo("claude-3-haiku", "Claude 3 Haiku", "Anthropic", "Fast and smart"),
+            ModelInfo("claude-3-sonnet", "Claude 3 Sonnet", "Anthropic", "Balanced performance")
         )
     }
 
@@ -45,20 +43,14 @@ class AIService(
     )
 
     /**
-     * Send a chat completion request to GitHub Models API
+     * Send a chat completion request
      */
     suspend fun chat(
         messages: List<ChatMessage>,
         model: String = DEFAULT_MODEL,
         temperature: Double = 0.7,
-        maxTokens: Int = 4096
+        maxTokens: Int = 2048
     ): ApiResponse<ChatCompletionResponse> {
-        val token = authManager.authToken
-
-        if (token.isBlank()) {
-            return ApiResponse.Error(ApiError(HttpStatusCode.Unauthorized, "Not authenticated. Please sign in first."))
-        }
-
         return try {
             val requestBody = ChatCompletionRequest(
                 messages = messages,
@@ -67,8 +59,7 @@ class AIService(
                 maxTokens = maxTokens
             )
 
-            val response = httpClient.post("$GITHUB_MODELS_BASE_URL/chat/completions") {
-                header(HttpHeaders.Authorization, "Bearer $token")
+            val response = httpClient.post(API_URL) {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 setBody(json.encodeToString(requestBody))
             }
@@ -96,16 +87,9 @@ class AIService(
      */
     fun createCodingSystemMessage(): ChatMessage = ChatMessage(
         role = "system",
-        content = """You are an expert coding assistant integrated into Gloom, a GitHub client app.
-You help users with:
-- Understanding code and repositories
-- Writing and debugging code
-- Explaining programming concepts
-- Answering questions about GitHub features
-- Code review and best practices
-
-Provide clear, concise, and helpful responses. Format code blocks with appropriate language tags.
-When showing code examples, use markdown code blocks with the language specified."""
+        content = """You are Gloom AI, a helpful coding assistant integrated into Gloom, a GitHub client app.
+Help users with coding questions, code reviews, debugging, and GitHub-related topics.
+Be concise, helpful, and friendly. Format code with markdown code blocks."""
     )
 
     /**

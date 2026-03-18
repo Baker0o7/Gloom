@@ -38,8 +38,8 @@ class AIViewModel(
     // Available models
     val availableModels: List<AIService.ModelInfo> get() = aiService.getAvailableModels()
 
-    // Check if user is authenticated
-    val isAuthenticated: Boolean get() = authManager.isSignedIn
+    // Always authenticated for AI (no auth required)
+    val isAuthenticated: Boolean get() = true
 
     init {
         // Add system message for coding assistant context
@@ -75,7 +75,7 @@ class AIViewModel(
                 messages = apiMessages,
                 model = selectedModel.id,
                 temperature = 0.7,
-                maxTokens = 4096
+                maxTokens = 2048
             )
 
             isLoading = false
@@ -92,8 +92,10 @@ class AIViewModel(
                 is ApiResponse.Error -> {
                     val errorMsg = result.error.message ?: "Unknown error"
                     error = when {
-                        errorMsg.contains("401", ignoreCase = true) -> "Authentication error. Please sign in again."
+                        errorMsg.contains("401", ignoreCase = true) -> "Authentication error. Please try again."
                         errorMsg.contains("429", ignoreCase = true) -> "Rate limited. Please wait a moment and try again."
+                        errorMsg.contains("500", ignoreCase = true) -> "Server error. Please try again later."
+                        errorMsg.contains("404", ignoreCase = true) -> "Model not found. Try a different model."
                         else -> "Error: $errorMsg"
                     }
                 }
