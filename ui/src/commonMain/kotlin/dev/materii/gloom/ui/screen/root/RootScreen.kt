@@ -4,6 +4,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Scaffold
@@ -50,6 +53,18 @@ class RootScreen: Screen {
                     TabBar(
                         onProfileLongClick = { accountSwitcherVisible = true }
                     )
+                },
+                floatingActionButton = {
+                    // AI Floating Action Button
+                    FloatingActionButton(
+                        onClick = { nav.current = RootTab.AI.tab },
+                        shape = CircleShape
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.AutoAwesome,
+                            contentDescription = "AI Assistant"
+                        )
+                    }
                 }
             ) {
                 Box(Modifier.padding(bottom = it.calculateBottomPadding() - DimenUtil.navBarPadding)) {
@@ -67,7 +82,8 @@ class RootScreen: Screen {
         val navigator = LocalTabNavigator.current
 
         NavigationBar {
-            RootTab.entries.forEach {
+            // Filter out AI tab from bottom navigation
+            RootTab.entries.filter { it != RootTab.AI }.forEach {
                 LongClickableNavBarItem(
                     selected = navigator.current == it.tab,
                     onClick = { navigator.current = it.tab },

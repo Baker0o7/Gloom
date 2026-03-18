@@ -13,8 +13,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 /**
- * AI Service for GitHub Models API
- * Uses the GitHub token for authentication - completely free for limited use
+ * AI Service for Z.AI
+ * Uses the Z.AI backend for chat completions - powerful AI capabilities
  */
 class AIService(
     private val httpClient: HttpClient,
@@ -23,17 +23,19 @@ class AIService(
 ) {
 
     companion object {
-        private const val GITHUB_MODELS_BASE_URL = "https://models.inference.ai.azure.com"
-        private const val DEFAULT_MODEL = "gpt-4o-mini"
+        // Z.AI Backend URL - can be configured for different environments
+        // For local development: http://10.0.2.2:3001 (Android emulator) or http://localhost:3001 (Desktop)
+        // For production: Update to your deployed backend URL
+        private const val ZAI_BASE_URL = "http://10.0.2.2:3001"
+        private const val ZAI_DESKTOP_URL = "http://localhost:3001"
+        private const val DEFAULT_MODEL = "default"
 
-        // Available free models on GitHub Models (exact model IDs)
+        // Available models through Z.AI
         val AVAILABLE_MODELS = listOf(
-            ModelInfo("gpt-4o-mini", "GPT-4o Mini", "OpenAI", "Fast and efficient for coding tasks"),
-            ModelInfo("gpt-4o", "GPT-4o", "OpenAI", "Most capable model for complex tasks"),
-            ModelInfo("Llama-3.3-70B-Instruct", "Llama 3.3 70B", "Meta", "Open-source powerful model"),
-            ModelInfo("Phi-4-mini-instruct", "Phi-4 Mini", "Microsoft", "Lightweight reasoning model"),
-            ModelInfo("Mistral-large-2411", "Mistral Large", "Mistral AI", "European AI model"),
-            ModelInfo("Codestral-2501", "Codestral", "Mistral AI", "Optimized for code generation")
+            ModelInfo("default", "Z.AI Smart", "Z.AI", "Intelligent assistant for coding and general tasks"),
+            ModelInfo("code-expert", "Code Expert", "Z.AI", "Specialized for code analysis and generation"),
+            ModelInfo("creative", "Creative Writer", "Z.AI", "Best for documentation and explanations"),
+            ModelInfo("fast", "Quick Response", "Z.AI", "Optimized for fast, concise answers")
         )
     }
 
@@ -45,7 +47,7 @@ class AIService(
     )
 
     /**
-     * Send a chat completion request to GitHub Models API
+     * Send a chat completion request to Z.AI Backend
      */
     suspend fun chat(
         messages: List<ChatMessage>,
@@ -53,11 +55,8 @@ class AIService(
         temperature: Double = 0.7,
         maxTokens: Int = 4096
     ): ApiResponse<ChatCompletionResponse> {
-        val token = authManager.authToken
-
-        if (token.isBlank()) {
-            return ApiResponse.Error(ApiError(HttpStatusCode.Unauthorized, "Not authenticated. Please sign in first."))
-        }
+        // For Z.AI, we don't require GitHub authentication
+        // The backend handles the AI authentication
 
         return try {
             val requestBody = ChatCompletionRequest(
@@ -67,16 +66,16 @@ class AIService(
                 maxTokens = maxTokens
             )
 
-            val requestBodyString = json.encodeToString(requestBody)
-            println("AI Service: Sending request to $GITHUB_MODELS_BASE_URL/chat/completions")
+            // Try Android emulator URL first, then desktop URL
+            val baseUrl = tryAndroidUrl()
+
+            println("AI Service: Sending request to $baseUrl/api/chat")
             println("AI Service: Model = $model")
             println("AI Service: Messages count = ${messages.size}")
 
-            val response = httpClient.post("$GITHUB_MODELS_BASE_URL/chat/completions") {
-                header(HttpHeaders.Authorization, "Bearer $token")
-                header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                header(HttpHeaders.Accept, ContentType.Application.Json.toString())
-                setBody(requestBodyString)
+            val response = httpClient.post("$baseUrl/api/chat") {
+                header(HttpHeaders.ContentType, ContentType.Application.Json)
+                setBody(json.encodeToString(requestBody))
             }
 
             println("AI Service: Response status = ${response.status}")
@@ -96,11 +95,40 @@ class AIService(
                 ApiResponse.Error(ApiError(response.status, errorBody.ifEmpty { "HTTP ${response.status}" }))
             }
         } catch (e: Exception) {
-            println("AI Service: Exception - ${e.javaClass.simpleName}: ${e.message}")
-            e.printStackTrace()
-            ApiResponse.Failure(ApiFailure(e, e.message))
+            println("AI Service: Primary URL failed, trying fallback - ${e.message}")
+            // Try fallback URL for desktop
+            try {
+                val requestBody = ChatCompletionRequest(
+                    messages = messages,
+                    model = model,
+                    temperature = temperature,
+                    maxTokens = maxTokens
+                )
+
+                val response = httpClient.post("$ZAI_DESKTOP_URL/api/chat") {
+                    header(HttpHeaders.ContentType, ContentType.Application.Json)
+                    setBody(json.encodeToString(requestBody))
+                }
+
+                if (response.status.isSuccess()) {
+                    val body = response.bodyAsText()
+                    ApiResponse.Success(json.decodeFromString<ChatCompletionResponse>(body))
+                } else {
+                    val errorBody = response.bodyAsText()
+                    ApiResponse.Error(ApiError(response.status, errorBody.ifEmpty { "HTTP ${response.status}" }))
+                }
+            } catch (fallbackError: Exception) {
+                println("AI Service: Fallback also failed - ${fallbackError.message}")
+                fallbackError.printStackTrace()
+                ApiResponse.Failure(ApiFailure(fallbackError, fallbackError.message))
+            }
         }
     }
+
+    /**
+     * Get the appropriate base URL for the current platform
+     */
+    private fun tryAndroidUrl(): String = ZAI_BASE_URL
 
     /**
      * Get available models
@@ -121,7 +149,9 @@ You help users with:
 - Code review and best practices
 
 Provide clear, concise, and helpful responses. Format code blocks with appropriate language tags.
-When showing code examples, use markdown code blocks with the language specified."""
+When showing code examples, use markdown code blocks with the language specified.
+
+Be friendly and professional. If you don't know something, admit it honestly."""
     )
 
     /**
