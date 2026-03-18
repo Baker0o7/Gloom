@@ -28,6 +28,12 @@ fun serviceModule() = module {
     fun provideApiService(httpService: HttpService, authManager: AuthManager) =
         GithubApiService(httpService, authManager)
 
+    fun provideAIService(
+        client: HttpClient,
+        json: Json,
+        authManager: AuthManager
+    ): AIService = AIService(client, json, authManager)
+
     fun provideApolloClient(logger: Logger): ApolloClient {
         return ApolloClient.Builder()
             .serverUrl(URLs.GRAPHQL)
@@ -54,8 +60,11 @@ fun serviceModule() = module {
         provideApiService(get(named("Rest")), get())
     }
 
+    single {
+        provideAIService(get(named("Rest")), get(), get())
+    }
+
     singleOf(::provideApolloClient)
     singleOf(::GraphQLService)
-    singleOf(::AIService)
 
 }

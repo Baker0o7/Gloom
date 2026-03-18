@@ -4,23 +4,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Available AI models from GitHub Models API
+ * Chat message for AI conversations
  */
 @Serializable
-data class AIModel(
-    val id: String,
-    val name: String,
-    val publisher: String,
-    val summary: String? = null,
-    @SerialName("task")
-    val taskType: String? = null,
-    @SerialName("license")
-    val licenseType: String? = null
-)
-
-@Serializable
-data class AIModelsResponse(
-    val data: List<AIModel>
+data class ChatMessage(
+    val role: String,
+    val content: String
 )
 
 /**
@@ -36,15 +25,6 @@ data class ChatCompletionRequest(
     @SerialName("top_p")
     val topP: Double = 1.0,
     val stream: Boolean = false
-)
-
-/**
- * Chat message for AI conversations
- */
-@Serializable
-data class ChatMessage(
-    val role: String,
-    val content: String
 )
 
 /**
