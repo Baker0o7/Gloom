@@ -7,6 +7,7 @@
     <string name="navigation_inbox">Inbox</string>
     <string name="navigation_profile">Profile</string>
     <string name="navigation_settings">Settings</string>
+    <string name="navigation_ai">AI Assistant</string>
     <!--           -->
 
     <!-- Generic Actions -->
@@ -33,6 +34,20 @@
     <string name="error_loading_content">Couldn\'t load content</string>
     <string name="error_network">Network error. Please check your connection.</string>
     <!--        -->
+
+    <!-- AI Assistant -->
+    <string name="ai_title">AI Coding Assistant</string>
+    <string name="ai_welcome">Hello! I\'m your AI coding assistant. I can help you with code questions, debugging, and more. How can I help you today?</string>
+    <string name="ai_hint">Ask a coding question...</string>
+    <string name="ai_send">Send</string>
+    <string name="ai_thinking">Thinking...</string>
+    <string name="ai_error">Failed to get response. Please try again.</string>
+    <string name="ai_not_authenticated">Please sign in to use the AI assistant.</string>
+    <string name="ai_clear_chat">Clear chat</string>
+    <string name="ai_select_model">Select Model</string>
+    <string name="ai_model_changed">Model changed to %s</string>
+    <string name="ai_chat_cleared">Chat cleared</string>
+    <!--             -->
 
     <!-- Titles -->
     <string name="title_starred">Starred</string>
