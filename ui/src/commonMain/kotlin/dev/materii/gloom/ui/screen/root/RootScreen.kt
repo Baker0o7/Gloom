@@ -4,6 +4,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Scaffold
@@ -14,12 +17,15 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import com.benasher44.uuid.uuid4
 import dev.materii.gloom.domain.manager.AuthManager
 import dev.materii.gloom.ui.component.Avatar
 import dev.materii.gloom.ui.component.navbar.LongClickableNavBarItem
+import dev.materii.gloom.ui.screen.ai.AIScreen
 import dev.materii.gloom.ui.screen.settings.component.account.AccountSwitcherSheet
 import dev.materii.gloom.ui.util.DimenUtil
 import dev.materii.gloom.ui.util.RootTab
@@ -50,6 +56,9 @@ class RootScreen: Screen {
                     TabBar(
                         onProfileLongClick = { accountSwitcherVisible = true }
                     )
+                },
+                floatingActionButton = {
+                    AIFloatingButton()
                 }
             ) {
                 Box(Modifier.padding(bottom = it.calculateBottomPadding() - DimenUtil.navBarPadding)) {
@@ -57,6 +66,22 @@ class RootScreen: Screen {
                 }
             }
         }
+    }
+
+    @Composable
+    private fun AIFloatingButton() {
+        val navigator = LocalNavigator.current
+        
+        ExtendedFloatingActionButton(
+            onClick = { navigator?.push(AIScreen()) },
+            icon = { 
+                Icon(
+                    imageVector = Icons.Filled.AutoAwesome,
+                    contentDescription = null
+                )
+            },
+            text = { Text("AI") }
+        )
     }
 
     @Composable
