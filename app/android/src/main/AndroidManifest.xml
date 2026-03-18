@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <queries>
+        <!-- Get the default browser -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="http" />
+        </intent>
+    </queries>
+
+    <application
+        android:name=".Gloom"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Gloom"
+        tools:targetApi="31">
+
+        <activity
+            android:name=".ui.activity.GloomActivity"
+            android:exported="true"
+            android:launchMode="standard"
+            android:theme="@style/Theme.Gloom.Splash" />
+
+        <activity
+            android:name=".ui.activity.OAuthActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.Gloom">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="com.github.android"
+                    android:path="/oauth"
+                    android:scheme="github" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.activity.DeepLinkActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=".deeplink"
+            android:theme="@style/Theme.Gloom">
+
+            <intent-filter android:autoVerify="false">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+                <data android:host="github.com" />
+                <data android:host="www.github.com" />
+                <data android:pathPattern="/.*" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".service.InstallService"
+            android:exported="false" />
+
+        <!-- ======================= Alternative Icons ======================= -->
+
+        <!-- Classic -->
+
+        <activity-alias
+            android:name="gloom.icons.classic.Main"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:targetActivity=".ui.activity.GloomActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name="gloom.icons.classic.Sky"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_sky"
+            android:targetActivity=".ui.activity.GloomActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name="gloom.icons.classic.Light"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_light"
+            android:targetActivity=".ui.activity.GloomActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- Stylized -->
+        <activity-alias
+            android:name="gloom.icons.stylized.Blueprint"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_blueprint"
+            android:targetActivity=".ui.activity.GloomActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- Pride -->
+
+        <activity-alias
+            android:name="gloom.icons.pride.LGBT"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_pride"
+            android:targetActivity=".ui.activity.GloomActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name="gloom.icons.pride.Trans"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_trans"
+            android:targetActivity=".ui.activity.GloomActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name="gloom.icons.pride.TransInverted"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_trans_inverted"
+            android:targetActivity=".ui.activity.GloomActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- Catppuccin -->
+
+        <activity-alias
+            android:name="gloom.icons.catppuccin.Mocha"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_mocha"
+            android:targetActivity=".ui.activity.GloomActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name="gloom.icons.catppuccin.Macchiato"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_macchiato"
+            android:targetActivity=".ui.activity.GloomActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name="gloom.icons.catppuccin.Frappe"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_frappe"
+            android:targetActivity=".ui.activity.GloomActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name="gloom.icons.catppuccin.Latte"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_latte"
+            android:targetActivity=".ui.activity.GloomActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- Holiday 2025 -->
+
+        <activity-alias
+            android:name="gloom.icons.holiday25.Valentines"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_valentines25"
+            android:targetActivity=".ui.activity.GloomActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+    </application>
+
+</manifest>

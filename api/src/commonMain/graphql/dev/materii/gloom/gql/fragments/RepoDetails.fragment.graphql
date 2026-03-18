@@ -1,0 +1,34 @@
+fragment RepoDetails on Repository {
+    id
+    description
+    readme {
+        contentHTML
+    }
+    licenseInfo {
+        key
+        nickname
+    }
+    homepageUrl
+    stargazerCount
+    forkCount
+    parent {
+        nameWithOwner
+    }
+    viewerHasStarred
+    viewerBlockedByOwner
+    latestRelease {
+        name
+    }
+    contributors(first: 12) {
+        nodes {
+            ...ContributorAvatar
+        }
+        totalCount
+    }
+    languages(first: 6, orderBy: {
+        field: SIZE
+        direction: DESC
+    }) {
+        ...Languages
+    }
+}
