@@ -42,7 +42,7 @@ class AIViewModel(
     val isAuthenticated: Boolean get() = authManager.isSignedIn
 
     init {
-        // Add welcome message
+        // Add system message for coding assistant context
         _messages.add(aiService.createCodingSystemMessage())
     }
 
@@ -68,7 +68,7 @@ class AIViewModel(
         isLoading = true
 
         screenModelScope.launch {
-            // Prepare messages for API (exclude system message for context)
+            // Prepare messages for API
             val apiMessages = _messages.toList()
 
             val result = aiService.chat(
@@ -85,6 +85,8 @@ class AIViewModel(
                     val assistantMessage = result.data.choices.firstOrNull()?.message
                     if (assistantMessage != null) {
                         _messages.add(assistantMessage)
+                    } else {
+                        error = "No response received from AI"
                     }
                 }
                 is ApiResponse.Error -> {
