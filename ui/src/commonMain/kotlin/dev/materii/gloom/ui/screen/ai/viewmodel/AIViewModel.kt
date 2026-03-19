@@ -86,17 +86,19 @@ class AIViewModel(
                     if (assistantMessage != null && assistantMessage.content.isNotBlank()) {
                         _messages.add(assistantMessage)
                     } else {
-                        error = "No response received from AI"
+                        error = "No response received from AI. Please try again."
                     }
                 }
                 is ApiResponse.Error -> {
-                    error = "Error: ${result.error.message}"
+                    val errorMsg = result.error.message ?: "Unknown error occurred"
+                    error = "Error: $errorMsg"
                 }
                 is ApiResponse.Failure -> {
-                    error = "Failed: ${result.error.message}"
+                    val errorMsg = result.error.message ?: "Connection failed. Please check if AI backend is running."
+                    error = errorMsg
                 }
                 is ApiResponse.Empty -> {
-                    error = "Empty response received"
+                    error = "Empty response received from AI service"
                 }
             }
         }

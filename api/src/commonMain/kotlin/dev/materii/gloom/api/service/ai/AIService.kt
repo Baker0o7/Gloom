@@ -58,17 +58,24 @@ class AIService(
         // For Z.AI, we don't require GitHub authentication
         // The backend handles the AI authentication
 
+        val requestBody = ChatCompletionRequest(
+            messages = messages,
+            model = model,
+            temperature = temperature,
+            maxTokens = maxTokens
+        )
+
+        // Try Android emulator URL first
+        return tryRequest(ZAI_BASE_URL, requestBody)
+            ?: tryRequest(ZAI_DESKTOP_URL, requestBody)
+            ?: ApiResponse.Error(ApiError(HttpStatusCode.ServiceUnavailable, "Unable to connect to AI service. Please check if the backend is running."))
+    }
+
+    private suspend fun tryRequest(
+        baseUrl: String,
+        requestBody: ChatCompletionRequest
+    ): ApiResponse<ChatCompletionResponse>? {
         return try {
-            val requestBody = ChatCompletionRequest(
-                messages = messages,
-                model = model,
-                temperature = temperature,
-                maxTokens = maxTokens
-            )
-
-            // Try Android emulator URL first, then desktop URL
-            val baseUrl = tryAndroidUrl()
-
             val response = httpClient.post("$baseUrl/api/chat") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 setBody(json.encodeToString(requestBody))
@@ -76,38 +83,21 @@ class AIService(
 
             if (response.status.isSuccess()) {
                 val body = response.bodyAsText()
-                ApiResponse.Success(json.decodeFromString<ChatCompletionResponse>(body))
+                val parsed = json.decodeFromString<ChatCompletionResponse>(body)
+                
+                // Validate response has content
+                if (parsed.choices.isNotEmpty() && parsed.choices[0].message?.content?.isNotBlank() == true) {
+                    ApiResponse.Success(parsed)
+                } else {
+                    ApiResponse.Error(ApiError(response.status, "Empty response from AI"))
+                }
             } else {
                 val errorBody = response.bodyAsText()
-                ApiResponse.Error(ApiError(response.status, errorBody))
+                ApiResponse.Error(ApiError(response.status, errorBody.ifBlank { "HTTP ${response.status}" }))
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            // Try fallback URL for desktop
-            try {
-                val requestBody = ChatCompletionRequest(
-                    messages = messages,
-                    model = model,
-                    temperature = temperature,
-                    maxTokens = maxTokens
-                )
-
-                val response = httpClient.post("$ZAI_DESKTOP_URL/api/chat") {
-                    header(HttpHeaders.ContentType, ContentType.Application.Json)
-                    setBody(json.encodeToString(requestBody))
-                }
-
-                if (response.status.isSuccess()) {
-                    val body = response.bodyAsText()
-                    ApiResponse.Success(json.decodeFromString<ChatCompletionResponse>(body))
-                } else {
-                    val errorBody = response.bodyAsText()
-                    ApiResponse.Error(ApiError(response.status, errorBody))
-                }
-            } catch (fallbackError: Exception) {
-                fallbackError.printStackTrace()
-                ApiResponse.Failure(ApiFailure(fallbackError, null))
-            }
+            null // Return null to try fallback URL
         }
     }
 
