@@ -109,6 +109,25 @@
     <string name="dev_alert_action_fill_queue">Fill queue</string>
     <!--             -->
 
+    <!-- AI Settings -->
+    <string name="settings_ai">AI Assistant</string>
+    <string name="settings_ai_description">Configure AI API settings</string>
+    
+    <string name="ai_settings_enabled">Enable AI Assistant</string>
+    <string name="ai_settings_enabled_description">Show AI button in the app</string>
+    
+    <string name="ai_settings_api_url">API URL</string>
+    <string name="ai_settings_api_url_description">Set a custom API endpoint for the AI assistant</string>
+    <string name="ai_settings_api_url_hint">e.g., http://10.0.2.2:3001</string>
+    <string name="ai_settings_api_url_default">Default (localhost:3001)</string>
+    
+    <string name="ai_settings_reset">Reset to Default</string>
+    <string name="ai_settings_test">Test Connection</string>
+    <string name="ai_settings_test_success">Connection successful!</string>
+    <string name="ai_settings_test_failed">Connection failed</string>
+    <string name="ai_settings_test_running">Testing...</string>
+    <!--          -->
+
     <!-- About -->
     <string name="settings_about">About</string>
 

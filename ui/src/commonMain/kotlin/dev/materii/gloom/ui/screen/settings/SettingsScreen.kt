@@ -85,6 +85,15 @@ class SettingsScreen: Screen {
 
                 SettingsGroup {
                     SettingsCategory(
+                        icon = Icons.Outlined.AutoAwesome,
+                        text = stringResource(Res.strings.settings_ai),
+                        subtext = stringResource(Res.strings.settings_ai_description),
+                        destination = ::AISettingsScreen
+                    )
+                }
+
+                SettingsGroup {
+                    SettingsCategory(
                         icon = Icons.Outlined.AccountCircle,
                         text = stringResource(Res.strings.settings_accounts),
                         subtext = stringResource(Res.strings.settings_accounts_description),

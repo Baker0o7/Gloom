@@ -5,6 +5,7 @@ import dev.materii.gloom.api.util.ApiError
 import dev.materii.gloom.api.util.ApiFailure
 import dev.materii.gloom.api.util.ApiResponse
 import dev.materii.gloom.domain.manager.AuthManager
+import dev.materii.gloom.domain.manager.PreferenceManager
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.bodyAsText
@@ -19,15 +20,14 @@ import kotlinx.serialization.json.Json
 class AIService(
     private val httpClient: HttpClient,
     private val json: Json,
-    private val authManager: AuthManager
+    private val authManager: AuthManager,
+    private val prefs: PreferenceManager
 ) {
 
     companion object {
-        // Z.AI Backend URL - can be configured for different environments
-        // For local development: http://10.0.2.2:3001 (Android emulator) or http://localhost:3001 (Desktop)
-        // For production: Update to your deployed backend URL
-        private const val ZAI_BASE_URL = "http://10.0.2.2:3001"
-        private const val ZAI_DESKTOP_URL = "http://localhost:3001"
+        // Default URLs for different platforms
+        private const val ANDROID_EMULATOR_URL = "http://10.0.2.2:3001"
+        private const val DESKTOP_URL = "http://localhost:3001"
         private const val DEFAULT_MODEL = "default"
 
         // Available models through Z.AI
@@ -45,6 +45,23 @@ class AIService(
         val publisher: String,
         val description: String
     )
+
+    /**
+     * Get the API URL from preferences or default
+     */
+    private fun getApiUrl(): String {
+        val customUrl = prefs.aiApiUrl.trim()
+        return if (customUrl.isNotBlank()) {
+            customUrl.trimEnd('/')
+        } else {
+            ANDROID_EMULATOR_URL
+        }
+    }
+
+    /**
+     * Check if AI is enabled
+     */
+    fun isEnabled(): Boolean = prefs.aiEnabled
 
     /**
      * Send a chat completion request to Z.AI Backend
@@ -65,10 +82,13 @@ class AIService(
             maxTokens = maxTokens
         )
 
-        // Try Android emulator URL first
-        return tryRequest(ZAI_BASE_URL, requestBody)
-            ?: tryRequest(ZAI_DESKTOP_URL, requestBody)
-            ?: ApiResponse.Error(ApiError(HttpStatusCode.ServiceUnavailable, "Unable to connect to AI service. Please check if the backend is running."))
+        // Get URL from preferences, fallback to defaults
+        val customUrl = getApiUrl()
+        
+        // Try custom URL first, then fallback URLs
+        return tryRequest(customUrl, requestBody)
+            ?: tryRequest(DESKTOP_URL, requestBody)
+            ?: ApiResponse.Error(ApiError(HttpStatusCode.ServiceUnavailable, "Unable to connect to AI service. Check if the backend is running or configure a custom API URL in Settings."))
     }
 
     private suspend fun tryRequest(
@@ -100,11 +120,6 @@ class AIService(
             null // Return null to try fallback URL
         }
     }
-
-    /**
-     * Get the appropriate base URL for the current platform
-     */
-    private fun tryAndroidUrl(): String = ZAI_BASE_URL
 
     /**
      * Get available models

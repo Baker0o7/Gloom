@@ -26,6 +26,10 @@ class PreferenceManager(provider: SettingsProvider):
     var trendingPeriod by enumPreference("trending_period", TRENDING_PERIOD)
 
     var appIcon by enumPreference("app_icon", AppIcon.Main)
+    
+    // AI Settings
+    var aiApiUrl by stringPreference("ai_api_url", "")
+    var aiEnabled by booleanPreference("ai_enabled", true)
 
     init {
         if (userAvatarRadius > 50) userAvatarRadius = 50

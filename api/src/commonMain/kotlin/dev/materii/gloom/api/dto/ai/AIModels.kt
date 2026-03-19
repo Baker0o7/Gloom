@@ -13,7 +13,7 @@ data class ChatMessage(
 )
 
 /**
- * Chat completion request for GitHub Models API
+ * Chat completion request for AI API
  */
 @Serializable
 data class ChatCompletionRequest(
