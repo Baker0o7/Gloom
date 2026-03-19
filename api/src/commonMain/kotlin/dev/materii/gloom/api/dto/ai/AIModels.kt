@@ -18,7 +18,7 @@ data class ChatMessage(
 @Serializable
 data class ChatCompletionRequest(
     val messages: List<ChatMessage>,
-    val model: String,
+    val model: String = "default",
     val temperature: Double = 0.7,
     @SerialName("max_tokens")
     val maxTokens: Int = 4096,

@@ -36,10 +36,16 @@ class AIViewModel(
         private set
 
     // Available models
-    val availableModels: List<AIService.ModelInfo> get() = aiService.getAvailableModels()
+    val availableModels: List<AIService.ModelInfo> get() = AIService.AVAILABLE_MODELS
 
     // Check if user is authenticated
     val isAuthenticated: Boolean get() = authManager.isSignedIn
+    
+    // Check if AI is enabled
+    val isEnabled: Boolean get() = aiService.isEnabled()
+    
+    // Get configured URL for display
+    val configuredUrl: String get() = aiService.getConfiguredUrl()
 
     init {
         // Add system message for coding assistant context
@@ -90,12 +96,10 @@ class AIViewModel(
                     }
                 }
                 is ApiResponse.Error -> {
-                    val errorMsg = result.error.message ?: "Unknown error occurred"
-                    error = "Error: $errorMsg"
+                    error = result.error.message ?: "Unknown error occurred"
                 }
                 is ApiResponse.Failure -> {
-                    val errorMsg = result.error.message ?: "Connection failed. Please check if AI backend is running."
-                    error = errorMsg
+                    error = result.error.message ?: "Connection failed."
                 }
                 is ApiResponse.Empty -> {
                     error = "Empty response received from AI service"
