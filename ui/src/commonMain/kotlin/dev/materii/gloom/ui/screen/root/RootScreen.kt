@@ -23,6 +23,7 @@ import com.benasher44.uuid.uuid4
 import dev.materii.gloom.domain.manager.AuthManager
 import dev.materii.gloom.ui.component.Avatar
 import dev.materii.gloom.ui.component.navbar.LongClickableNavBarItem
+import dev.materii.gloom.ui.screen.ai.AIScreen
 import dev.materii.gloom.ui.screen.settings.component.account.AccountSwitcherSheet
 import dev.materii.gloom.ui.util.DimenUtil
 import dev.materii.gloom.ui.util.RootTab
@@ -48,6 +49,9 @@ class RootScreen: Screen {
         }
 
         TabNavigator(tab = RootTab.HOME.tab) { nav ->
+            // Hide FAB when on AI screen
+            val showFab = nav.current !is AIScreen
+            
             Scaffold(
                 bottomBar = {
                     TabBar(
@@ -55,15 +59,17 @@ class RootScreen: Screen {
                     )
                 },
                 floatingActionButton = {
-                    // AI Floating Action Button
-                    FloatingActionButton(
-                        onClick = { nav.current = RootTab.AI.tab },
-                        shape = CircleShape
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.AutoAwesome,
-                            contentDescription = "AI Assistant"
-                        )
+                    if (showFab) {
+                        // AI Floating Action Button
+                        FloatingActionButton(
+                            onClick = { nav.current = RootTab.AI.tab },
+                            shape = CircleShape
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.AutoAwesome,
+                                contentDescription = "AI Assistant"
+                            )
+                        }
                     }
                 }
             ) {
