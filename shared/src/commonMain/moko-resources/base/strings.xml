@@ -35,6 +35,12 @@
     <string name="error_network">Network error. Please check your connection.</string>
     <!--        -->
 
+    <!-- Search -->
+    <string name="search_repos">Search repositories...</string>
+    <string name="results">results</string>
+    <string name="no_results_found">No results found</string>
+    <!--        -->
+
     <!-- AI Assistant -->
     <string name="ai_title">AI Coding Assistant</string>
     <string name="ai_welcome">Hello! I\'m your AI coding assistant. I can help you with code questions, debugging, and more. How can I help you today?</string>
