@@ -1,0 +1,54 @@
+fragment UserProfile on User {
+    id
+    anyPinnableItems(type: REPOSITORY)
+    avatarUrl(size: 256)
+    bio
+    name
+    login
+    profileReadme {
+        contentHTML
+    }
+    email
+    location
+    status {
+        emoji
+        message
+    }
+    websiteUrl
+    url
+    pinnedItems(first: 6) {
+        nodes {
+            ...PinnedRepo
+        }
+    }
+    repositories(ownerAffiliations: [OWNER]) {
+        totalCount
+    }
+    organizations {
+        totalCount
+    }
+    starredRepositories {
+        totalCount
+    }
+    company
+    sponsoring {
+        totalCount
+    }
+    followers {
+        totalCount
+    }
+    following {
+        totalCount
+    }
+    socialAccounts(first: 4) {
+        nodes {
+            ...Social
+        }
+    }
+    viewerCanFollow
+    viewerIsFollowing
+    isFollowingViewer
+    contributionsCollection {
+        ...Contributions
+    }
+}

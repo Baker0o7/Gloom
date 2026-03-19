@@ -1,0 +1,273 @@
+/* Do not hardcode colors here */
+
+* {
+    box-sizing: border-box;
+}
+
+/*
+   Supports the old way of doing theme-specific images
+
+   From the GitHub Android app
+*/
+:root[data-color-mode="dark"] .markdown-body a[href$="#gh-light-mode-only"] {
+    display: none;
+}
+
+:root[data-color-mode="light"] .markdown-body a[href$="#gh-dark-mode-only"] {
+    display: none;
+}
+
+/*
+    Web views hold on to their hover event if the app is backgrounded. We need to disable custom hover effects by setting a
+    class on body and overriding them in CSS when we apply this workaround. When the mouse enters the web view again, we
+    can disable our override.
+
+    From the GitHub Android app
+*/
+body.hover-override a:not([target]) {
+    background-color: transparent;
+    transform: scale(1);
+}
+
+input:disabled {
+    touch-action: none;
+}
+
+/* Our styles start here */
+
+body {
+    color: var(--onSurface);
+}
+
+img,
+themed-picture {
+    max-width: 100%;
+}
+
+.markdown-body p,
+.markdown-body blockquote,
+.markdown-body ul,
+.markdown-body ol,
+.markdown-body dl,
+.markdown-body table,
+.markdown-body pre,
+.markdown-body details {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    line-height: 1.45;
+}
+
+
+/* Misc. */
+
+.markdown-body hr { /* Horizontal Divider */
+    background-color: var(--outline);
+    opacity: 0.3;
+    height: 0.18em;
+    border: none;
+    border-radius: 100px; /* This looks silly but just makes the divider have rounded ends */
+    padding: 0;
+    margin: 24px 0;
+}
+
+.markdown-body blockquote {
+    padding: 0 1em;
+    margin: 0;
+    border-left: 0.25em solid var(--outlineVariant);
+    color: var(--outline);
+}
+
+.octicon {
+    fill: currentColor;
+}
+
+
+/* Links */
+
+.markdown-body a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.markdown-body a.user-mention,
+.markdown-body a.issue-link {
+    font-weight: 500;
+    color: var(--onSurface)
+}
+
+.markdown-body a.commit-link {
+    font-size: 0.85em;
+}
+
+.markdown-body a.anchor {
+    display: none;
+}
+
+
+/* Table */
+/* This is based on the table design featured in https://m3.material.io/ */
+
+.markdown-body table a {
+    word-break: normal;
+}
+
+table, table *, pre {
+    touch-action: pan-x;
+}
+
+.markdown-body table {
+    display: block;
+    overflow: auto;
+
+    width: fit-content; /* Makes sure the table border doesn't extend further than the content */
+    max-width: 100%;
+
+    border-radius: 16px;
+    border: 0.5px solid var(--outline);
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+.markdown-body table td,
+.markdown-body table th { /* All table cells */
+    padding: 12px 18px;
+    border-top: 0.5px solid var(--outline);
+    border-right: 0.5px solid var(--outline);
+}
+
+.markdown-body thead:first-child tr:first-child th,
+.markdown-body tbody:first-child tr:first-child td {
+    border-top: 0; /* Prevents cell borders at the top of the table from making the border thicker */
+}
+
+.markdown-body tr :last-child {
+    border-right: 0; /* Prevents cell borders at the end of the table from making the border thicker */
+}
+
+.markdown-body thead th { /* Header table cells */
+    background-color: var(--surfaceContainer);
+    color: var(--onSurfaceVariant);
+    font-weight: 500;
+}
+
+
+/* Code */
+
+pre, code, kbd {
+    font-size: 1em;
+    font-family: monospace;
+}
+
+pre,
+.highlight pre {
+    word-wrap: normal;
+    white-space: pre;
+}
+
+.markdown-body code, /* Inline code blocks */
+.markdown-body tt {
+    padding: .2em .4em;
+    margin: 0;
+    background-color: var(--surfaceContainerHigh);
+    border-radius: 6px;
+}
+
+.markdown-body code br,
+.markdown-body tt br { /* Dont break lines in code blocks */
+    display: none;
+}
+
+.markdown-body .highlight pre, /* Syntax highlighted code blocks */
+.markdown-body pre {
+    padding: 16px;
+    overflow: auto;
+    line-height: 1.45;
+    background-color: var(--surfaceContainer);
+    border-radius: 8px
+}
+
+.markdown-body pre > code { /* Reset styles meant for inline code when inside a syntax highlighted block */
+    padding: 0;
+    margin: 0;
+    background-color: transparent !important;
+    border-radius: 0;
+}
+
+
+/* Alerts */
+
+.markdown-alert {
+    border-left: 8px solid var(--outline);
+    border-radius: 8px;
+    background-color: var(--surfaceContainerLow);
+    box-shadow: 0 0.5px 2px 1px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    padding: 16px;
+    padding-left: 1em;
+    margin-bottom: 1.1rem;
+    font-size: 95%;
+}
+
+.markdown-alert p {
+    margin-bottom: 0;
+}
+
+.markdown-alert-title {
+    display: flex;
+    font-weight: 500;
+    align-items: center;
+    line-height: 1;
+    margin-top: 0;
+    margin-bottom: 8px !important;
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.markdown-alert-title .octicon {
+    margin-right: 8px;
+}
+
+
+.markdown-alert-note {
+    border-color: var(--alertNote);
+}
+
+.markdown-alert-note .markdown-alert-title {
+    color: var(--alertNote);
+}
+
+
+.markdown-alert-tip {
+    border-color: var(--alertTip);
+}
+
+.markdown-alert-tip .markdown-alert-title {
+    color: var(--alertTip);
+}
+
+
+.markdown-alert-important {
+    border-color: var(--alertImportant);
+}
+
+.markdown-alert-important .markdown-alert-title {
+    color: var(--alertImportant);
+}
+
+
+.markdown-alert-warning {
+    border-color: var(--alertWarning);
+}
+
+.markdown-alert-warning .markdown-alert-title {
+    color: var(--alertWarning);
+}
+
+
+.markdown-alert-caution {
+    border-color: var(--alertCaution);
+}
+
+.markdown-alert-caution .markdown-alert-title {
+    color: var(--alertCaution);
+}

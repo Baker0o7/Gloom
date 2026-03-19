@@ -1,0 +1,26 @@
+# Android SDK and JDK
+android-sdk/
+jdk17/
+
+# Build outputs
+Gloom/app/android/build/
+Gloom/**/build/
+
+# Downloads
+download/
+
+# Uploads
+upload/
+
+# Skills
+skills/
+
+# IDE
+.idea/
+*.iml
+
+# Environment
+.env
+
+# Nested git
+Gloom/.git
