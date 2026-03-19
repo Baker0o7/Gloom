@@ -2,9 +2,9 @@ package dev.materii.gloom.api.service.ai
 
 import dev.materii.gloom.api.dto.ai.*
 import dev.materii.gloom.api.util.ApiError
-import dev.materii.gloom.api.util.ApiFailure
 import dev.materii.gloom.api.util.ApiResponse
 import dev.materii.gloom.domain.manager.AuthManager
+import dev.materii.gloom.domain.manager.PreferenceManager
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.bodyAsText
@@ -14,20 +14,19 @@ import kotlinx.serialization.json.Json
 
 /**
  * AI Service for Z.AI
- * Uses the Z.AI backend for chat completions - powerful AI capabilities
+ * Uses the Z.AI backend for chat completions
  */
 class AIService(
     private val httpClient: HttpClient,
     private val json: Json,
-    private val authManager: AuthManager
+    private val authManager: AuthManager,
+    private val prefs: PreferenceManager
 ) {
 
     companion object {
-        // Z.AI Backend URL - can be configured for different environments
-        // For local development: http://10.0.2.2:3001 (Android emulator) or http://localhost:3001 (Desktop)
-        // For production: Update to your deployed backend URL
-        private const val ZAI_BASE_URL = "http://10.0.2.2:3001"
-        private const val ZAI_DESKTOP_URL = "http://localhost:3001"
+        // Default URLs for different platforms
+        private const val ANDROID_EMULATOR_URL = "http://10.0.2.2:3001"
+        private const val DESKTOP_URL = "http://localhost:3001"
         private const val DEFAULT_MODEL = "default"
 
         // Available models through Z.AI
@@ -47,6 +46,23 @@ class AIService(
     )
 
     /**
+     * Get the API URL from preferences or default
+     */
+    private fun getApiUrl(): String {
+        val customUrl = prefs.aiApiUrl.trim()
+        return if (customUrl.isNotBlank()) {
+            customUrl
+        } else {
+            ANDROID_EMULATOR_URL
+        }
+    }
+
+    /**
+     * Check if AI is enabled
+     */
+    fun isEnabled(): Boolean = prefs.aiEnabled
+
+    /**
      * Send a chat completion request to Z.AI Backend
      */
     suspend fun chat(
@@ -55,80 +71,51 @@ class AIService(
         temperature: Double = 0.7,
         maxTokens: Int = 4096
     ): ApiResponse<ChatCompletionResponse> {
-        // For Z.AI, we don't require GitHub authentication
-        // The backend handles the AI authentication
+        val requestBody = ChatCompletionRequest(
+            messages = messages,
+            model = model,
+            temperature = temperature,
+            maxTokens = maxTokens
+        )
 
+        // Try custom URL first, then fallback URLs
+        return tryRequest(getApiUrl(), requestBody)
+            ?: tryRequest(DESKTOP_URL, requestBody)
+            ?: tryRequest(ANDROID_EMULATOR_URL, requestBody)
+            ?: ApiResponse.Error(ApiError(HttpStatusCode.ServiceUnavailable, "Unable to connect to AI service. Check if the backend is running or configure a custom API URL in Settings."))
+    }
+
+    private suspend fun tryRequest(
+        baseUrl: String,
+        requestBody: ChatCompletionRequest
+    ): ApiResponse<ChatCompletionResponse>? {
         return try {
-            val requestBody = ChatCompletionRequest(
-                messages = messages,
-                model = model,
-                temperature = temperature,
-                maxTokens = maxTokens
-            )
-
-            // Try Android emulator URL first, then desktop URL
-            val baseUrl = tryAndroidUrl()
-
-            println("AI Service: Sending request to $baseUrl/api/chat")
-            println("AI Service: Model = $model")
-            println("AI Service: Messages count = ${messages.size}")
-
             val response = httpClient.post("$baseUrl/api/chat") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 setBody(json.encodeToString(requestBody))
             }
 
-            println("AI Service: Response status = ${response.status}")
-
-            if (response.status.isSuccess()) {
-                val body = response.bodyAsText()
-                println("AI Service: Response body length = ${body.length}")
-                try {
-                    ApiResponse.Success(json.decodeFromString<ChatCompletionResponse>(body))
-                } catch (e: Exception) {
-                    println("AI Service: Parse error - ${e.message}")
-                    ApiResponse.Error(ApiError(response.status, "Failed to parse response: ${e.message}"))
+            when {
+                response.status.isSuccess() -> {
+                    val body = response.bodyAsText()
+                    val parsed = json.decodeFromString<ChatCompletionResponse>(body)
+                    
+                    // Validate response has content
+                    if (parsed.choices.isNotEmpty() && parsed.choices[0].message?.content?.isNotBlank() == true) {
+                        ApiResponse.Success(parsed)
+                    } else {
+                        ApiResponse.Error(ApiError(response.status, "Empty response from AI"))
+                    }
                 }
-            } else {
-                val errorBody = response.bodyAsText()
-                println("AI Service: Error response = $errorBody")
-                ApiResponse.Error(ApiError(response.status, errorBody.ifEmpty { "HTTP ${response.status}" }))
+                else -> {
+                    null // Try next URL
+                }
             }
         } catch (e: Exception) {
-            println("AI Service: Primary URL failed, trying fallback - ${e.message}")
-            // Try fallback URL for desktop
-            try {
-                val requestBody = ChatCompletionRequest(
-                    messages = messages,
-                    model = model,
-                    temperature = temperature,
-                    maxTokens = maxTokens
-                )
-
-                val response = httpClient.post("$ZAI_DESKTOP_URL/api/chat") {
-                    header(HttpHeaders.ContentType, ContentType.Application.Json)
-                    setBody(json.encodeToString(requestBody))
-                }
-
-                if (response.status.isSuccess()) {
-                    val body = response.bodyAsText()
-                    ApiResponse.Success(json.decodeFromString<ChatCompletionResponse>(body))
-                } else {
-                    val errorBody = response.bodyAsText()
-                    ApiResponse.Error(ApiError(response.status, errorBody.ifEmpty { "HTTP ${response.status}" }))
-                }
-            } catch (fallbackError: Exception) {
-                println("AI Service: Fallback also failed - ${fallbackError.message}")
-                fallbackError.printStackTrace()
-                ApiResponse.Failure(ApiFailure(fallbackError, fallbackError.message))
-            }
+            e.printStackTrace()
+            null // Return null to try fallback URL
         }
     }
-
-    /**
-     * Get the appropriate base URL for the current platform
-     */
-    private fun tryAndroidUrl(): String = ZAI_BASE_URL
 
     /**
      * Get available models

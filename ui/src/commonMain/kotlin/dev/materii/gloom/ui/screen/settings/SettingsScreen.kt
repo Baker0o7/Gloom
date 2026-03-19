@@ -90,6 +90,13 @@ class SettingsScreen: Screen {
                         subtext = stringResource(Res.strings.settings_accounts_description),
                         destination = ::AccountSettingsScreen
                     )
+
+                    SettingsCategory(
+                        icon = Icons.Outlined.SmartToy,
+                        text = "AI Assistant",
+                        subtext = "Configure AI chat settings and API URL",
+                        destination = ::AISettingsScreen
+                    )
                 }
 
                 SettingsGroup {

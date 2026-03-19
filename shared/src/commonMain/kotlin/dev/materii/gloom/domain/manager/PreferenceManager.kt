@@ -27,6 +27,10 @@ class PreferenceManager(provider: SettingsProvider):
 
     var appIcon by enumPreference("app_icon", AppIcon.Main)
 
+    // AI Settings
+    var aiEnabled by booleanPreference("ai_enabled", true)
+    var aiApiUrl by stringPreference("ai_api_url", "")
+
     init {
         if (userAvatarRadius > 50) userAvatarRadius = 50
         if (userAvatarRadius < 0) userAvatarRadius = 0
