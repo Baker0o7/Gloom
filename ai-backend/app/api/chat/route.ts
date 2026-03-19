@@ -37,15 +37,27 @@ export async function POST(request: NextRequest) {
       thinking: { type: 'disabled' },
     });
 
+    // Get the first choice content safely
+    const firstChoice = completion.choices?.[0];
+    const responseContent = firstChoice?.message?.content || '';
+    const responseRole = firstChoice?.message?.role || 'assistant';
+    const finishReason = firstChoice?.finish_reason || 'stop';
+
+    // Build response matching Kotlin data class structure
     const response = {
-      choices: completion.choices?.map((choice: { message?: { content?: string; role?: string }; finish_reason?: string }) => ({
-        message: {
-          role: choice.message?.role || 'assistant',
-          content: choice.message?.content || ''
-        },
-        finish_reason: choice.finish_reason || 'stop'
-      })) || [],
+      id: `chat-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      created: Math.floor(Date.now() / 1000),
       model: model || 'z-ai-model',
+      choices: [
+        {
+          index: 0,
+          message: {
+            role: responseRole,
+            content: responseContent
+          },
+          finish_reason: finishReason
+        }
+      ],
       usage: {
         prompt_tokens: 0,
         completion_tokens: 0,

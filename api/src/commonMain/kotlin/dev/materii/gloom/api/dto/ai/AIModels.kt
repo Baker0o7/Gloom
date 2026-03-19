@@ -28,21 +28,21 @@ data class ChatCompletionRequest(
 )
 
 /**
- * Chat completion response from GitHub Models API
+ * Chat completion response from AI API
  */
 @Serializable
 data class ChatCompletionResponse(
-    val id: String,
-    val choices: List<ChatChoice>,
-    val created: Long,
-    val model: String,
+    val id: String = "",
+    val choices: List<ChatChoice> = emptyList(),
+    val created: Long = 0L,
+    val model: String = "",
     val usage: Usage? = null
 )
 
 @Serializable
 data class ChatChoice(
-    val index: Int,
-    val message: ChatMessage,
+    val index: Int = 0,
+    val message: ChatMessage? = null,
     @SerialName("finish_reason")
     val finishReason: String? = null
 )
@@ -50,9 +50,9 @@ data class ChatChoice(
 @Serializable
 data class Usage(
     @SerialName("prompt_tokens")
-    val promptTokens: Int,
+    val promptTokens: Int = 0,
     @SerialName("completion_tokens")
-    val completionTokens: Int,
+    val completionTokens: Int = 0,
     @SerialName("total_tokens")
-    val totalTokens: Int
+    val totalTokens: Int = 0
 )

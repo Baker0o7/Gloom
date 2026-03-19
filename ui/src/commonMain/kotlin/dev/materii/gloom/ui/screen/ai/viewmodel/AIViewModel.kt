@@ -83,7 +83,7 @@ class AIViewModel(
             when (result) {
                 is ApiResponse.Success -> {
                     val assistantMessage = result.data.choices.firstOrNull()?.message
-                    if (assistantMessage != null) {
+                    if (assistantMessage != null && assistantMessage.content.isNotBlank()) {
                         _messages.add(assistantMessage)
                     } else {
                         error = "No response received from AI"
