@@ -1,5 +1,6 @@
 package dev.materii.gloom.di.module
 
+import dev.materii.gloom.ui.screen.notifications.viewmodel.NotificationsViewModel
 import dev.materii.gloom.ui.screen.ai.viewmodel.AIViewModel
 import dev.materii.gloom.ui.screen.settings.viewmodel.AISettingsViewModel
 import dev.materii.gloom.ui.screen.auth.viewmodel.LandingViewModel
@@ -36,6 +37,7 @@ fun viewModelModule() = module {
     factoryOf(::AppIconSettingsViewModel)
     factoryOf(::HomeViewModel)
     factoryOf(::ExploreViewModel)
+    factoryOf(::NotificationsViewModel)
     factoryOf(::AIViewModel)
     factoryOf(::AISettingsViewModel)
 
