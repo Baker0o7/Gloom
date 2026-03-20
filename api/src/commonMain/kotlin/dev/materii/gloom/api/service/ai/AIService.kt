@@ -35,13 +35,14 @@ class AIService(
 ) {
 
     companion object {
-        const val DEFAULT_BASE_URL = "https://api.z.ai/v1"
-        const val DEFAULT_MODEL    = "z-ai"
+        // Correct Z.AI endpoint — https://docs.z.ai/guides/overview/quick-start
+        const val DEFAULT_BASE_URL = "https://api.z.ai/api/paas/v4"
+        const val DEFAULT_MODEL    = "glm-4.5-flash"
 
         val AVAILABLE_MODELS = listOf(
-            ModelInfo("z-ai",         "Z.AI",           "Z.AI", "Smart general-purpose assistant"),
-            ModelInfo("z-ai-code",    "Z.AI Code",      "Z.AI", "Optimised for code generation and review"),
-            ModelInfo("z-ai-mini",    "Z.AI Mini",      "Z.AI", "Fast, lightweight responses"),
+            ModelInfo("glm-4.5-flash", "GLM-4.5 Flash", "Z.AI", "Free tier — fast and capable"),
+            ModelInfo("glm-4.5",       "GLM-4.5",       "Z.AI", "Balanced performance"),
+            ModelInfo("glm-5",         "GLM-5",         "Z.AI", "Most capable"),
         )
     }
 
