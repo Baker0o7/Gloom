@@ -10,7 +10,7 @@ query Search($query: String!, $type: SearchType!, $first: Int = 20, $after: Stri
             __typename
             ... on Repository {
                 id
-                name
+                repoName: name
                 description
                 stargazerCount
                 forkCount
@@ -21,7 +21,7 @@ query Search($query: String!, $type: SearchType!, $first: Int = 20, $after: Stri
             ... on User {
                 id
                 login
-                name
+                userName: name
                 bio
                 avatarUrl
                 followers { totalCount }
@@ -30,7 +30,7 @@ query Search($query: String!, $type: SearchType!, $first: Int = 20, $after: Stri
             ... on Organization {
                 id
                 login
-                name
+                orgName: name
                 description
                 avatarUrl
                 membersWithRole { totalCount }

@@ -162,7 +162,7 @@ private fun SearchResultRow(node: SearchQuery.Node) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { nav.navigate(RepoScreen(r.owner.login, r.name)) }
+                    .clickable { nav.navigate(RepoScreen(r.owner.login, r.repoName)) }
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment     = Alignment.CenterVertically,
@@ -173,7 +173,7 @@ private fun SearchResultRow(node: SearchQuery.Node) {
                 )
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
-                        "${r.owner.login}/${r.name}",
+                        "${r.owner.login}/${r.repoName}",
                         style      = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.SemiBold,
                         maxLines   = 1,
@@ -194,7 +194,7 @@ private fun SearchResultRow(node: SearchQuery.Node) {
         }
         "User", "Organization" -> {
             val login  = node.onUser?.login      ?: node.onOrganization?.login      ?: return
-            val name   = node.onUser?.name       ?: node.onOrganization?.name
+            val name   = node.onUser?.userName   ?: node.onOrganization?.orgName
             val avatar = node.onUser?.avatarUrl  ?: node.onOrganization?.avatarUrl  ?: return
             Row(
                 modifier = Modifier
