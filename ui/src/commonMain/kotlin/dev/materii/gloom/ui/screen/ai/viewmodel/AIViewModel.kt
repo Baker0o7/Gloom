@@ -95,9 +95,9 @@ class AIViewModel(
                 is ApiResponse.Error -> {
                     val errorMsg = result.error.message ?: "Unknown error"
                     error = when {
-                        errorMsg.contains("401", ignoreCase = true) -> "Invalid or missing Z.AI API key. Go to Settings → AI Settings to add your key from z.ai."
-                        errorMsg.contains("403", ignoreCase = true) -> "Access denied. Check your Z.AI API key in Settings → AI Settings."
-                        errorMsg.contains("404", ignoreCase = true) -> "API endpoint not found. Please update the app."
+                        errorMsg.contains("401", ignoreCase = true) -> "Z.AI key rejected (401). Your key may be invalid or expired. Open Settings → AI Settings to update it."
+                        errorMsg.contains("403", ignoreCase = true) -> "Z.AI access denied (403). Check your API key in Settings → AI Settings."
+                        errorMsg.contains("404", ignoreCase = true) -> "Z.AI endpoint not found (404). Check the Custom URL in Settings → AI Settings."
                         errorMsg.contains("429", ignoreCase = true) -> "Rate limit exceeded. Please wait a moment and try again."
                         else -> "Error: $errorMsg"
                     }

@@ -288,25 +288,39 @@ class AIScreen : Tab {
                             modifier = Modifier.fillMaxWidth(),
                             color = MaterialTheme.colorScheme.errorContainer
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
+                            Column(
+                                modifier = Modifier.padding(12.dp).fillMaxWidth()
                             ) {
-                                Text(
-                                    text = viewModel.error ?: "",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onErrorContainer,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                IconButton(onClick = { viewModel.dismissError() }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Dismiss",
-                                        tint = MaterialTheme.colorScheme.onErrorContainer
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = viewModel.error ?: "",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onErrorContainer,
+                                        modifier = Modifier.weight(1f)
                                     )
+                                    IconButton(onClick = { viewModel.dismissError() }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Dismiss",
+                                            tint = MaterialTheme.colorScheme.onErrorContainer
+                                        )
+                                    }
+                                }
+                                // Show settings shortcut for auth errors
+                                val err = viewModel.error ?: ""
+                                if (err.contains("401") || err.contains("403") || err.contains("key")) {
+                                    androidx.compose.material3.TextButton(
+                                        onClick = { pushNavigator.push(dev.materii.gloom.ui.screen.settings.AISettingsScreen()) },
+                                        colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
+                                            contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                        )
+                                    ) {
+                                        Text("Open AI Settings →", style = MaterialTheme.typography.labelSmall)
+                                    }
                                 }
                             }
                         }
