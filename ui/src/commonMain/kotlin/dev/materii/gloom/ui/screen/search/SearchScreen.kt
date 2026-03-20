@@ -128,7 +128,7 @@ class SearchScreen : Screen {
 
                     viewModel.results.isEmpty() && !viewModel.isLoading ->
                         Box(Modifier.fillMaxSize(), Alignment.Center) {
-                            Text("No results for "${viewModel.query}"",
+                            Text("No results for \"${viewModel.query}\"",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
 

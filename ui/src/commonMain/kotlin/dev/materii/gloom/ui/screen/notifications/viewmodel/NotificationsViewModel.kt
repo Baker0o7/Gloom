@@ -47,7 +47,7 @@ class NotificationsViewModel(
 
     fun markRead(id: String) {
         screenModelScope.launch {
-            repo.markThreadRead(id).ifSuccessful {
+            repo.markThreadRead(id).ifSuccessful { _ ->
                 val idx = notifications.indexOfFirst { it.id == id }
                 if (idx >= 0) notifications[idx] = notifications[idx].copy(unread = false)
             }
@@ -56,7 +56,7 @@ class NotificationsViewModel(
 
     fun markAllRead() {
         screenModelScope.launch {
-            repo.markAllRead().ifSuccessful {
+            repo.markAllRead().ifSuccessful { _ ->
                 val updated = notifications.map { it.copy(unread = false) }
                 notifications.clear()
                 notifications.addAll(updated)
