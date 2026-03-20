@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material3.*
@@ -25,6 +26,7 @@ import dev.materii.gloom.ui.screen.explore.component.TrendingFeedFooter
 import dev.materii.gloom.ui.screen.explore.component.TrendingFeedHeader
 import dev.materii.gloom.ui.screen.explore.component.TrendingRepoItem
 import dev.materii.gloom.ui.screen.explore.viewmodel.ExploreViewModel
+import dev.materii.gloom.ui.screen.search.SearchScreen
 import dev.materii.gloom.ui.screen.profile.ProfileScreen
 import dev.materii.gloom.ui.screen.repo.RepoScreen
 import dev.materii.gloom.ui.util.NavigationUtil.navigate
@@ -103,9 +105,18 @@ class ExploreScreen: Tab {
     private fun TopBar(
         scrollBehavior: TopAppBarScrollBehavior
     ) {
+        val nav = LocalNavigator.currentOrThrow
         LargeTopAppBar(
-            title = {
-                Text(text = options.title)
+            title = { Text(text = options.title) },
+            actions = {
+                IconButton(
+                    onClick = { nav.push(SearchScreen()) }
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Search,
+                        contentDescription = "Search"
+                    )
+                }
             },
             scrollBehavior = scrollBehavior
         )

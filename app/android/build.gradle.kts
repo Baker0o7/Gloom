@@ -83,6 +83,8 @@ dependencies {
     implementation(libs.bundles.kotlinx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.splashscreen)
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material3)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.koin.android)
     implementation(libs.voyager.navigator)

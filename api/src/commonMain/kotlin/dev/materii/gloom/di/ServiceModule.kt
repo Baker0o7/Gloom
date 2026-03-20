@@ -42,7 +42,12 @@ fun serviceModule() = module {
             .addHttpInterceptor(LoggingInterceptor(LoggingInterceptor.Level.BODY) {
                 logger.debug("GraphQL", it)
             })
-            .normalizedCache(MemoryCacheFactory(10 * 1024 * 1024, 1000 * 30))
+            .normalizedCache(
+                MemoryCacheFactory(
+                    maxSizeBytes = 25 * 1024 * 1024,  // 25 MB
+                    expireAfterMillis = 5 * 60 * 1000  // 5 min TTL (was 30s)
+                )
+            )
             .build()
     }
 

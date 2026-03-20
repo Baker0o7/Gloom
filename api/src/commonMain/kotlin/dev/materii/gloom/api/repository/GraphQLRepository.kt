@@ -165,4 +165,9 @@ class GraphQLRepository(
 
     suspend fun unreact(id: String, reaction: ReactionContent) = service.unreact(id, reaction)
 
+    suspend fun search(
+        query: String,
+        type: dev.materii.gloom.gql.type.SearchType,
+        cursor: String? = null,
+    ) = service.search(query, type, cursor)
 }

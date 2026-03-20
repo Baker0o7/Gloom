@@ -326,4 +326,15 @@ class GraphQLService(
             .response()
     }
 
+    suspend fun search(
+        query: String,
+        type: dev.materii.gloom.gql.type.SearchType,
+        cursor: String? = null,
+    ) = withContext(Dispatchers.IO) {
+        val after = if (cursor != null) Optional.present(cursor) else Optional.absent()
+        client.query(dev.materii.gloom.gql.SearchQuery(query, type, after = after))
+            .addToken()
+            .response()
+    }
+
 }

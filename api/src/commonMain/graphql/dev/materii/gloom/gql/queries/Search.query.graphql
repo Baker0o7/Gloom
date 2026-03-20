@@ -1,0 +1,40 @@
+query Search($query: String!, $type: SearchType!, $first: Int = 20, $after: String) {
+    search(query: $query, type: $type, first: $first, after: $after) {
+        pageInfo {
+            hasNextPage
+            endCursor
+        }
+        repositoryCount
+        userCount
+        nodes {
+            __typename
+            ... on Repository {
+                id
+                name
+                description
+                stargazerCount
+                forkCount
+                viewerHasStarred
+                primaryLanguage { name color }
+                owner { login avatarUrl __typename }
+            }
+            ... on User {
+                id
+                login
+                name
+                bio
+                avatarUrl
+                followers { totalCount }
+                viewerIsFollowing
+            }
+            ... on Organization {
+                id
+                login
+                name
+                description
+                avatarUrl
+                membersWithRole { totalCount }
+            }
+        }
+    }
+}

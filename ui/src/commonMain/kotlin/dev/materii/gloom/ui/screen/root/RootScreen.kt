@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -24,6 +26,7 @@ import dev.materii.gloom.domain.manager.AuthManager
 import dev.materii.gloom.domain.manager.PreferenceManager
 import dev.materii.gloom.ui.component.Avatar
 import dev.materii.gloom.ui.component.navbar.LongClickableNavBarItem
+import dev.materii.gloom.ui.screen.notifications.viewmodel.NotificationsViewModel
 import dev.materii.gloom.ui.screen.settings.component.account.AccountSwitcherSheet
 import dev.materii.gloom.ui.util.DimenUtil
 import dev.materii.gloom.ui.util.RootTab
@@ -88,41 +91,42 @@ class RootScreen: Screen {
         onProfileLongClick: () -> Unit
     ) {
         val authManager: AuthManager = koinInject()
+        val notifVM: NotificationsViewModel = koinInject()
         val navigator = LocalTabNavigator.current
 
         NavigationBar {
-            // Filter out AI tab from bottom navigation
-            RootTab.entries.filter { it != RootTab.AI }.forEach {
+            RootTab.entries.filter { it != RootTab.AI }.forEach { rootTab ->
+                val badge = if (rootTab == RootTab.NOTIFICATIONS && notifVM.unreadCount > 0)
+                    notifVM.unreadCount else null
+
                 LongClickableNavBarItem(
-                    selected = navigator.current == it.tab,
-                    onClick = { navigator.current = it.tab },
-                    onLongClick = { if (it == RootTab.PROFILE) onProfileLongClick() },
+                    selected    = navigator.current == rootTab.tab,
+                    onClick     = { navigator.current = rootTab.tab },
+                    onLongClick = { if (rootTab == RootTab.PROFILE) onProfileLongClick() },
                     icon = {
-                        if (authManager.accounts.size > 1 && it == RootTab.PROFILE) {
-                            val avatarUrl = authManager.currentAccount?.avatarUrl
-                            if (avatarUrl != null) {
-                                Avatar(
-                                    url = avatarUrl,
-                                    contentDescription = it.tab.options.title,
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .clip(CircleShape)
-                                        .alpha(if (navigator.current == it.tab) 1f else 0.75f)
-                                )
+                        BadgedBox(badge = {
+                            if (badge != null) Badge { Text(badge.coerceAtMost(99).toString()) }
+                        }) {
+                            if (authManager.accounts.size > 1 && rootTab == RootTab.PROFILE) {
+                                val avatarUrl = authManager.currentAccount?.avatarUrl
+                                if (avatarUrl != null) {
+                                    Avatar(
+                                        url = avatarUrl,
+                                        contentDescription = rootTab.tab.options.title,
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                            .clip(CircleShape)
+                                            .alpha(if (navigator.current == rootTab.tab) 1f else 0.75f)
+                                    )
+                                } else {
+                                    Icon(rootTab.tab.options.icon!!, rootTab.tab.options.title)
+                                }
                             } else {
-                                Icon(
-                                    painter = it.tab.options.icon!!,
-                                    contentDescription = it.tab.options.title
-                                )
+                                Icon(rootTab.tab.options.icon!!, rootTab.tab.options.title)
                             }
-                        } else {
-                            Icon(
-                                painter = it.tab.options.icon!!,
-                                contentDescription = it.tab.options.title
-                            )
                         }
                     },
-                    label = { Text(text = it.tab.options.title) },
+                    label = { Text(text = rootTab.tab.options.title) },
                 )
             }
         }

@@ -15,4 +15,7 @@ class GithubRepository(
 
     suspend fun markAllRead() =
         service.markAllRead()
+
+    suspend fun createIssue(owner: String, repo: String, title: String, body: String) =
+        service.createIssue(owner, repo, title, body)
 }

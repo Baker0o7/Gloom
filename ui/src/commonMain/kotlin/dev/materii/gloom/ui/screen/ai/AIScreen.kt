@@ -16,11 +16,14 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.koin.koinScreenModel
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import dev.icerock.moko.resources.compose.stringResource
 import dev.materii.gloom.Res
+import dev.materii.gloom.ui.screen.ai.AICommitMessageScreen
 import dev.materii.gloom.api.dto.ai.ChatMessage
 import dev.materii.gloom.api.service.ai.AIService
 import dev.materii.gloom.ui.component.toolbar.LargeToolbar
@@ -44,6 +47,7 @@ class AIScreen : Tab {
     @Composable
     override fun Content() {
         val viewModel: AIViewModel = koinScreenModel()
+        val pushNavigator = LocalNavigator.currentOrThrow
         val scrollState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
         var showModelSelector by remember { mutableStateOf(false) }
@@ -57,6 +61,14 @@ class AIScreen : Tab {
                             Icon(
                                 imageVector = Icons.Default.Settings,
                                 contentDescription = stringResource(Res.strings.ai_select_model)
+                            )
+                        }
+                        IconButton(onClick = {
+                            pushNavigator.push(AICommitMessageScreen())
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Commit Message Generator"
                             )
                         }
                         IconButton(onClick = { viewModel.clearChat() }) {

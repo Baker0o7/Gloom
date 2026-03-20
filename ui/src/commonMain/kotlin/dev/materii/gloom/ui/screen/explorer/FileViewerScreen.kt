@@ -34,6 +34,7 @@ import dev.materii.gloom.ui.screen.explorer.viewers.ImageFileViewer
 import dev.materii.gloom.ui.screen.explorer.viewers.MarkdownFileViewer
 import dev.materii.gloom.ui.screen.explorer.viewers.PdfFileViewer
 import dev.materii.gloom.ui.screen.explorer.viewers.TextFileViewer
+import dev.materii.gloom.ui.screen.ai.AICodeReviewScreen
 import dev.materii.gloom.ui.screen.explorer.viewmodel.FileViewerViewModel
 import dev.materii.gloom.ui.util.thenIf
 import org.koin.compose.koinInject
@@ -189,6 +190,24 @@ class FileViewerScreen(
                 imageVector = Icons.Filled.Share,
                 contentDescription = stringResource(Res.strings.action_share)
             )
+        }
+
+        // AI code review button - only shown for text/code files
+        if (fileType == "TextFileType" || fileType == "MarkdownFileType") {
+            val aiNav = LocalNavigator.currentOrThrow
+            IconButton(onClick = {
+                val rawContent = file?.fileType?.onTextFileType?.contentRaw ?: ""
+                val path = viewModel.getFileUrl().substringAfter("blob/")
+                aiNav.push(AICodeReviewScreen(
+                    filePath    = path,
+                    fileContent = rawContent,
+                ))
+            }) {
+                Icon(
+                    imageVector        = Icons.Outlined.AutoAwesome,
+                    contentDescription = "AI Code Review"
+                )
+            }
         }
     }
 

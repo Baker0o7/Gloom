@@ -1,10 +1,12 @@
 package dev.materii.gloom.ui.screen.notifications
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,6 +26,7 @@ import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -103,31 +106,29 @@ class NotificationsScreen : Tab {
             },
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         ) { pv ->
-            PullToRefreshBox(
-                isRefreshing = viewModel.isLoading,
-                onRefresh    = viewModel::load,
-                modifier     = Modifier.fillMaxSize().padding(pv),
-            ) {
-                when {
-                    viewModel.isLoading && viewModel.notifications.isEmpty() -> {
-                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator()
-                        }
-                    }
-
-                    viewModel.error != null && viewModel.notifications.isEmpty() -> {
-                        ErrorState(onRetry = viewModel::load)
-                    }
-
-                    viewModel.notifications.isEmpty() -> {
-                        EmptyState()
-                    }
-
-                    else -> {
-                        NotificationList(
-                            notifications = viewModel.notifications,
-                            onMarkRead    = viewModel::markRead,
-                        )
+            Column(Modifier.fillMaxSize().padding(pv)) {
+                // Filter chips
+                FilterRow(
+                    selectedReason = viewModel.filterReason,
+                    onSelect       = { viewModel.filterReason = it },
+                )
+                PullToRefreshBox(
+                    isRefreshing = viewModel.isLoading,
+                    onRefresh    = viewModel::load,
+                    modifier     = Modifier.fillMaxSize(),
+                ) {
+                    val filtered = viewModel.filteredNotifications
+                    when {
+                        viewModel.isLoading && filtered.isEmpty() ->
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
+                            }
+                        viewModel.error != null && filtered.isEmpty() ->
+                            ErrorState(onRetry = viewModel::load)
+                        filtered.isEmpty() ->
+                            EmptyState()
+                        else ->
+                            NotificationList(notifications = filtered, onMarkRead = viewModel::markRead)
                     }
                 }
             }
@@ -319,7 +320,39 @@ private fun String.toIcon(): ImageVector = when (this) {
     else          -> Icons.Outlined.Notifications   // Issue + default
 }
 
-// ─── Empty state ──────────────────────────────────────────────────────────────
+// ─── Filter row ──────────────────────────────────────────────────────────────
+
+@Composable
+private fun FilterRow(selectedReason: String?, onSelect: (String?) -> Unit) {
+    val reasons = listOf(null, "mention", "review_requested", "assign", "comment", "subscribed")
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        reasons.forEach { reason ->
+            val label = when (reason) {
+                null                -> "All"
+                "mention"           -> "Mentions"
+                "review_requested"  -> "Reviews"
+                "assign"            -> "Assigned"
+                "comment"           -> "Comments"
+                "subscribed"        -> "Watching"
+                else                -> reason
+            }
+            val selected = selectedReason == reason
+            FilterChip(
+                selected = selected,
+                onClick  = { onSelect(if (selected && reason != null) null else reason) },
+                label    = { Text(label, style = MaterialTheme.typography.labelSmall) },
+            )
+        }
+    }
+}
+
+// ─── Empty state ────────────────────────────────────────────────────────────────
 
 @Composable
 private fun EmptyState() {

@@ -2,6 +2,8 @@ package dev.materii.gloom.di.module
 
 import dev.materii.gloom.ui.screen.notifications.viewmodel.NotificationsViewModel
 import dev.materii.gloom.ui.screen.ai.viewmodel.AIViewModel
+import dev.materii.gloom.ui.screen.issue.viewmodel.CreateIssueViewModel
+import dev.materii.gloom.ui.screen.search.viewmodel.SearchViewModel
 import dev.materii.gloom.ui.screen.settings.viewmodel.AISettingsViewModel
 import dev.materii.gloom.ui.screen.auth.viewmodel.LandingViewModel
 import dev.materii.gloom.ui.screen.explore.viewmodel.ExploreViewModel
@@ -18,6 +20,7 @@ import dev.materii.gloom.ui.screen.settings.viewmodel.AppIconSettingsViewModel
 import dev.materii.gloom.ui.screen.settings.viewmodel.AppearanceSettingsViewModel
 import dev.materii.gloom.ui.screen.settings.viewmodel.SettingsViewModel
 import org.koin.core.module.dsl.factoryOf
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 fun viewModelModule() = module {
@@ -37,7 +40,8 @@ fun viewModelModule() = module {
     factoryOf(::AppIconSettingsViewModel)
     factoryOf(::HomeViewModel)
     factoryOf(::ExploreViewModel)
-    factoryOf(::NotificationsViewModel)
+    // Singleton so badge in navbar and inbox screen share the same unread count
+    singleOf(::NotificationsViewModel)
     factoryOf(::AIViewModel)
     factoryOf(::AISettingsViewModel)
 
@@ -52,5 +56,7 @@ fun viewModelModule() = module {
     factoryOf(::RepoCommitsViewModel)
     factoryOf(::RepoContributorsViewModel)
     factoryOf(::LicenseViewModel)
+    factoryOf(::SearchViewModel)
+    factoryOf(::CreateIssueViewModel)
 
 }

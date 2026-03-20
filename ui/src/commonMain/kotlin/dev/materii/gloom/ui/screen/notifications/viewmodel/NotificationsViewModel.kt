@@ -16,6 +16,13 @@ class NotificationsViewModel(
 ) : ScreenModel {
 
     val notifications = mutableStateListOf<Notification>()
+    val unreadCount: Int get() = notifications.count { it.unread }
+
+    var filterReason by mutableStateOf<String?>(null)
+
+    val filteredNotifications: List<Notification>
+        get() = if (filterReason == null) notifications
+                else notifications.filter { it.reason == filterReason }
 
     var isLoading by mutableStateOf(false)
         private set
@@ -33,7 +40,6 @@ class NotificationsViewModel(
                 notifications.clear()
                 notifications.addAll(list)
             }
-            // If no success, show error only if list is still empty
             if (notifications.isEmpty()) error = "Couldn't load notifications"
             isLoading = false
         }

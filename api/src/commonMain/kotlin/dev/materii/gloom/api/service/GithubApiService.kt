@@ -4,11 +4,16 @@ import dev.materii.gloom.api.dto.notification.Notification
 import dev.materii.gloom.api.util.ApiResponse
 import dev.materii.gloom.domain.manager.AuthManager
 import io.ktor.client.request.header
+import io.ktor.client.request.setBody
 import io.ktor.client.request.url
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class GithubApiService(
     private val client: HttpService,
@@ -32,7 +37,6 @@ class GithubApiService(
         }
     }
 
-    /** Mark a single thread as read (PATCH → 205 No Content). */
     suspend fun markThreadRead(threadId: String): ApiResponse<String> =
         withContext(Dispatchers.IO) {
             client.request {
@@ -42,7 +46,6 @@ class GithubApiService(
             }
         }
 
-    /** Mark all notifications as read (PUT → 202 or 205). */
     suspend fun markAllRead(): ApiResponse<String> =
         withContext(Dispatchers.IO) {
             client.request {
@@ -51,4 +54,25 @@ class GithubApiService(
                 method = HttpMethod.Put
             }
         }
+
+    // ── Issues ────────────────────────────────────────────────────────────────
+
+    @Serializable
+    private data class CreateIssueBody(val title: String, val body: String)
+
+    suspend fun createIssue(
+        owner: String,
+        repo: String,
+        title: String,
+        body: String,
+    ): ApiResponse<String> = withContext(Dispatchers.IO) {
+        val json = Json.encodeToString(CreateIssueBody(title, body))
+        client.request {
+            url("$base/repos/$owner/$repo/issues")
+            header(HttpHeaders.Authorization, auth())
+            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            method = HttpMethod.Post
+            setBody(json)
+        }
+    }
 }
