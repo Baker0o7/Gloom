@@ -1,6 +1,7 @@
 package dev.materii.gloom.di.module
 
 import dev.materii.gloom.ui.screen.ai.viewmodel.AIViewModel
+import dev.materii.gloom.ui.screen.settings.viewmodel.AISettingsViewModel
 import dev.materii.gloom.ui.screen.auth.viewmodel.LandingViewModel
 import dev.materii.gloom.ui.screen.explore.viewmodel.ExploreViewModel
 import dev.materii.gloom.ui.screen.explorer.viewmodel.DirectoryListingViewModel
@@ -36,6 +37,7 @@ fun viewModelModule() = module {
     factoryOf(::HomeViewModel)
     factoryOf(::ExploreViewModel)
     factoryOf(::AIViewModel)
+    factoryOf(::AISettingsViewModel)
 
     factoryOf(::RepoViewModel)
     factoryOf(::RepoDetailsViewModel)

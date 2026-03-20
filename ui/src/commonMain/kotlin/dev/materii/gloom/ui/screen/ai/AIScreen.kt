@@ -93,6 +93,36 @@ class AIScreen : Tab {
                         )
                     }
                 }
+            } else if (!viewModel.hasApiKey) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(pv),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.padding(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.AutoAwesome,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "Set up Z.AI",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            text = "Add your Z.AI API key in Settings → AI Settings to start chatting.\n\nGet a key at z.ai",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                }
             } else {
                 Column(
                     modifier = Modifier

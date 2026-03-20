@@ -41,6 +41,9 @@ class AIViewModel(
     // Check if user is authenticated
     val isAuthenticated: Boolean get() = authManager.isSignedIn
 
+    // Check if API key is configured
+    val hasApiKey: Boolean get() = aiService.hasApiKey()
+
     init {
         // Add system message for coding assistant context
         _messages.add(aiService.createCodingSystemMessage())

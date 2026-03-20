@@ -1,40 +1,47 @@
 package dev.materii.gloom.api.service.ai
 
-import dev.materii.gloom.api.dto.ai.*
+import dev.materii.gloom.api.dto.ai.ChatCompletionRequest
+import dev.materii.gloom.api.dto.ai.ChatCompletionResponse
+import dev.materii.gloom.api.dto.ai.ChatMessage
 import dev.materii.gloom.api.util.ApiError
+import dev.materii.gloom.api.util.ApiFailure
 import dev.materii.gloom.api.util.ApiResponse
 import dev.materii.gloom.domain.manager.AuthManager
 import dev.materii.gloom.domain.manager.PreferenceManager
-import io.ktor.client.*
-import io.ktor.client.request.*
+import io.ktor.client.HttpClient
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
-import io.ktor.http.*
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.isSuccess
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 /**
- * AI Service for Z.AI
- * Uses the Z.AI backend for chat completions
+ * AI Service backed by the z.ai API (OpenAI-compatible).
+ *
+ * Default endpoint: https://api.z.ai/v1/chat/completions
+ * Users can override the base URL in Settings → AI Settings.
+ * An API key from z.ai is required (https://z.ai).
  */
 class AIService(
     private val httpClient: HttpClient,
     private val json: Json,
     private val authManager: AuthManager,
-    private val prefs: PreferenceManager
+    private val prefs: PreferenceManager,
 ) {
 
     companion object {
-        // Default URLs for different platforms
-        private const val ANDROID_EMULATOR_URL = "http://10.0.2.2:3001"
-        private const val DESKTOP_URL = "http://localhost:3001"
-        private const val DEFAULT_MODEL = "default"
+        const val DEFAULT_BASE_URL = "https://api.z.ai/v1"
+        const val DEFAULT_MODEL    = "z-ai"
 
-        // Available models through Z.AI
         val AVAILABLE_MODELS = listOf(
-            ModelInfo("default", "Z.AI Smart", "Z.AI", "Intelligent assistant for coding and general tasks"),
-            ModelInfo("code-expert", "Code Expert", "Z.AI", "Specialized for code analysis and generation"),
-            ModelInfo("creative", "Creative Writer", "Z.AI", "Best for documentation and explanations"),
-            ModelInfo("fast", "Quick Response", "Z.AI", "Optimized for fast, concise answers")
+            ModelInfo("z-ai",         "Z.AI",           "Z.AI", "Smart general-purpose assistant"),
+            ModelInfo("z-ai-code",    "Z.AI Code",      "Z.AI", "Optimised for code generation and review"),
+            ModelInfo("z-ai-mini",    "Z.AI Mini",      "Z.AI", "Fast, lightweight responses"),
         )
     }
 
@@ -42,118 +49,86 @@ class AIService(
         val id: String,
         val displayName: String,
         val publisher: String,
-        val description: String
+        val description: String,
     )
 
-    /**
-     * Get the API URL from preferences or default
-     */
-    private fun getApiUrl(): String {
-        val customUrl = prefs.aiApiUrl.trim()
-        return if (customUrl.isNotBlank()) {
-            customUrl
-        } else {
-            ANDROID_EMULATOR_URL
-        }
-    }
-
-    /**
-     * Check if AI is enabled
-     */
     fun isEnabled(): Boolean = prefs.aiEnabled
 
-    /**
-     * Send a chat completion request to Z.AI Backend
-     */
+    /** Active base URL — user custom URL or the z.ai default. */
+    private fun baseUrl(): String =
+        prefs.aiApiUrl.trim().ifBlank { DEFAULT_BASE_URL }.trimEnd('/')
+
+    /** Active API key. */
+    private fun apiKey(): String = prefs.aiApiKey.trim()
+
+    fun hasApiKey(): Boolean = apiKey().isNotBlank()
+
     suspend fun chat(
         messages: List<ChatMessage>,
         model: String = DEFAULT_MODEL,
         temperature: Double = 0.7,
-        maxTokens: Int = 4096
+        maxTokens: Int = 4096,
     ): ApiResponse<ChatCompletionResponse> {
-        val requestBody = ChatCompletionRequest(
-            messages = messages,
-            model = model,
-            temperature = temperature,
-            maxTokens = maxTokens
-        )
+        val key = apiKey()
+        if (key.isBlank()) {
+            return ApiResponse.Error(
+                ApiError(HttpStatusCode.Unauthorized, "No Z.AI API key configured. Add one in Settings → AI Settings.")
+            )
+        }
 
-        // Try custom URL first, then fallback URLs
-        return tryRequest(getApiUrl(), requestBody)
-            ?: tryRequest(DESKTOP_URL, requestBody)
-            ?: tryRequest(ANDROID_EMULATOR_URL, requestBody)
-            ?: ApiResponse.Error(ApiError(HttpStatusCode.ServiceUnavailable, "Unable to connect to AI service. Check if the backend is running or configure a custom API URL in Settings."))
-    }
-
-    private suspend fun tryRequest(
-        baseUrl: String,
-        requestBody: ChatCompletionRequest
-    ): ApiResponse<ChatCompletionResponse>? {
         return try {
-            val response = httpClient.post("$baseUrl/api/chat") {
+            val requestBody = ChatCompletionRequest(
+                messages    = messages,
+                model       = model,
+                temperature = temperature,
+                maxTokens   = maxTokens,
+            )
+
+            val response = httpClient.post("${baseUrl()}/chat/completions") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header(HttpHeaders.Authorization, "Bearer $key")
                 setBody(json.encodeToString(requestBody))
             }
 
             when {
                 response.status.isSuccess() -> {
-                    val body = response.bodyAsText()
+                    val body   = response.bodyAsText()
                     val parsed = json.decodeFromString<ChatCompletionResponse>(body)
-                    
-                    // Validate response has content
-                    if (parsed.choices.isNotEmpty() && parsed.choices[0].message?.content?.isNotBlank() == true) {
+                    if (parsed.choices.isNotEmpty() &&
+                        parsed.choices[0].message.content.isNotBlank()) {
                         ApiResponse.Success(parsed)
                     } else {
-                        ApiResponse.Error(ApiError(response.status, "Empty response from AI"))
+                        ApiResponse.Error(ApiError(response.status, "Empty response from Z.AI"))
                     }
                 }
-                else -> {
-                    null // Try next URL
-                }
+                response.status == HttpStatusCode.Unauthorized ->
+                    ApiResponse.Error(ApiError(response.status, "Invalid API key. Check Settings → AI Settings."))
+                else ->
+                    ApiResponse.Error(ApiError(response.status, "Z.AI error: ${response.status}"))
             }
         } catch (e: Exception) {
-            e.printStackTrace()
-            null // Return null to try fallback URL
+            ApiResponse.Failure(ApiFailure(e, e.message))
         }
     }
 
-    /**
-     * Get available models
-     */
     fun getAvailableModels(): List<ModelInfo> = AVAILABLE_MODELS
 
-    /**
-     * Create a system message for coding assistant
-     */
-    fun createCodingSystemMessage(): ChatMessage = ChatMessage(
-        role = "system",
-        content = """You are an expert coding assistant integrated into Gloom, a GitHub client app.
-You help users with:
-- Understanding code and repositories
-- Writing and debugging code
-- Explaining programming concepts
-- Answering questions about GitHub features
-- Code review and best practices
+    fun createCodingSystemMessage() = ChatMessage(
+        role    = "system",
+        content = """
+            You are an expert coding assistant integrated into Gloom, a GitHub client app.
+            You help users with:
+            - Understanding code and repositories
+            - Writing and debugging code (prefer Kotlin for Android examples)
+            - Explaining programming concepts
+            - Answering questions about GitHub features
+            - Code review and best practices
 
-Provide clear, concise, and helpful responses. Format code blocks with appropriate language tags.
-When showing code examples, use markdown code blocks with the language specified.
-
-Be friendly and professional. If you don't know something, admit it honestly."""
+            Format code blocks with appropriate language tags (```kotlin, ```xml, etc.).
+            Be concise, friendly, and professional.
+        """.trimIndent()
     )
 
-    /**
-     * Create a user message
-     */
-    fun createUserMessage(content: String): ChatMessage = ChatMessage(
-        role = "user",
-        content = content
-    )
-
-    /**
-     * Create an assistant message
-     */
-    fun createAssistantMessage(content: String): ChatMessage = ChatMessage(
-        role = "assistant",
-        content = content
-    )
+    fun createUserMessage(content: String)      = ChatMessage(role = "user",      content = content)
+    fun createAssistantMessage(content: String) = ChatMessage(role = "assistant", content = content)
 }
