@@ -86,11 +86,10 @@ class AIService(
                 temperature = temperature,
                 maxTokens   = maxTokens,
             )
-            val bodyJson = json.encodeToString(requestBody)
             val response = httpClient.post("${baseUrl()}/chat/completions") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 header(HttpHeaders.Authorization, "Bearer $key")
-                setBody(bodyJson)
+                setBody(requestBody)
             }
             val body = response.bodyAsText()
             if (response.status.isSuccess()) {
@@ -148,10 +147,9 @@ class AIService(
      */
     suspend fun signIn(email: String, password: String): Result<String> {
         return try {
-            val body = json.encodeToString(SignInRequest(email.trim(), password))
             val response = httpClient.post("https://chat.z.ai/api/v1/auths/signin") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                setBody(body)
+                setBody(SignInRequest(email.trim(), password))
             }
             val responseBody = response.bodyAsText()
             if (response.status.isSuccess()) {
