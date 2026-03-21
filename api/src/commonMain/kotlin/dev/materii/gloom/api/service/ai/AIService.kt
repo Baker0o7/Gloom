@@ -18,7 +18,6 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.encodeToString
 
 /**
  * AI Service backed by the z.ai API (OpenAI-compatible).
@@ -87,7 +86,7 @@ class AIService(
                 maxTokens   = maxTokens,
             )
 
-            val bodyJson = json.encodeToString(ChatCompletionRequest.serializer(), requestBody)
+            val bodyJson = json.encodeToString(requestBody)
             val response = httpClient.post("${baseUrl()}/chat/completions") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 header(HttpHeaders.Authorization, "Bearer $key")
