@@ -89,16 +89,18 @@ fun httpModule() = module {
     ): HttpClient {
         return HttpClient(CIO) {
             install(HttpRequestRetry) {
-                maxRetries = 3
+                maxRetries = 4
                 retryIf { _, httpResponse ->
-                    val status = httpResponse.status
-                    !status.isSuccess() && status.value !in 400..499
+                    val code = httpResponse.status.value
+                    // Retry on server errors AND 429 rate-limit
+                    code == 429 || (code >= 500)
                 }
                 retryOnExceptionIf { _, error ->
                     error is HttpRequestTimeoutException
                 }
                 delayMillis { retry ->
-                    retry * 1000L
+                    // Exponential backoff: 2s, 4s, 8s, 16s
+                    2000L * (1L shl (retry - 1))
                 }
             }
             install(ContentNegotiation) {

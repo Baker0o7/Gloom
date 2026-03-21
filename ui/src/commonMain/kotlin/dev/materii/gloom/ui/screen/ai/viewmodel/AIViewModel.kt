@@ -100,11 +100,18 @@ class AIViewModel(
                 }
                 is ApiResponse.Error -> {
                     val errorMsg = result.error.message ?: "Unknown error"
+                    if (errorMsg.contains("429", ignoreCase = true)) {
+                        // Auto-retry after 5s on rate limit
+                        error = "Rate limit — retrying in 5s…"
+                        kotlinx.coroutines.delay(5000)
+                        error = null
+                        sendMessage()
+                        return@launch
+                    }
                     error = when {
                         errorMsg.contains("401", ignoreCase = true) -> "Z.AI 401: $errorMsg"
                         errorMsg.contains("403", ignoreCase = true) -> "Z.AI access denied (403). Check your API key in Settings → AI Settings."
                         errorMsg.contains("404", ignoreCase = true) -> "Z.AI endpoint not found (404). Check the Custom URL in Settings → AI Settings."
-                        errorMsg.contains("429", ignoreCase = true) -> "Rate limit exceeded. Please wait a moment and try again."
                         else -> "Error: $errorMsg"
                     }
                 }
