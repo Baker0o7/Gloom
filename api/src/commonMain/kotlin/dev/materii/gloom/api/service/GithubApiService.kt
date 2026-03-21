@@ -69,7 +69,7 @@ class GithubApiService(
             url("$base/repos/$owner/$repo/issues")
             header(HttpHeaders.Authorization, auth())
             method = HttpMethod.Post
-            contentType(ContentType.Application.Json)
+            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
             setBody(CreateIssueBody(title, body))
         }
     }

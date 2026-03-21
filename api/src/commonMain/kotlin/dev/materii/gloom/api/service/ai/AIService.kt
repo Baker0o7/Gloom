@@ -87,7 +87,7 @@ class AIService(
             )
 
             val response = httpClient.post("${baseUrl()}/chat/completions") {
-                contentType(ContentType.Application.Json)
+                header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 header(HttpHeaders.Authorization, "Bearer $key")
                 setBody(requestBody)
             }
