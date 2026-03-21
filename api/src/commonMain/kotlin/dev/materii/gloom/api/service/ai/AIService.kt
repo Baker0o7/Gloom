@@ -18,6 +18,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
 
 /**
  * AI Service backed by the z.ai API (OpenAI-compatible).
@@ -86,27 +87,31 @@ class AIService(
                 maxTokens   = maxTokens,
             )
 
+            val bodyJson = json.encodeToString(ChatCompletionRequest.serializer(), requestBody)
             val response = httpClient.post("${baseUrl()}/chat/completions") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 header(HttpHeaders.Authorization, "Bearer $key")
-                setBody(requestBody)
+                setBody(bodyJson)
             }
 
+            val body = response.bodyAsText()
             when {
                 response.status.isSuccess() -> {
-                    val body   = response.bodyAsText()
-                    val parsed = json.decodeFromString<ChatCompletionResponse>(body)
-                    if (parsed.choices.isNotEmpty() &&
-                        parsed.choices[0].message.content.isNotBlank()) {
-                        ApiResponse.Success(parsed)
-                    } else {
-                        ApiResponse.Error(ApiError(response.status, "Empty response from Z.AI"))
+                    return@try try {
+                        val parsed = json.decodeFromString<ChatCompletionResponse>(body)
+                        val text = parsed.choices.firstOrNull()?.message?.content?.trim() ?: ""
+                        if (text.isNotBlank()) ApiResponse.Success(parsed)
+                        else ApiResponse.Error(ApiError(response.status, "Empty response from Z.AI"))
+                    } catch (e: Exception) {
+                        ApiResponse.Failure(ApiFailure(e, "Parse error: ${body.take(300)}"))
                     }
                 }
                 response.status == HttpStatusCode.Unauthorized ->
-                    ApiResponse.Error(ApiError(response.status, "Invalid API key. Check Settings → AI Settings."))
+                    ApiResponse.Error(ApiError(response.status, "401 from Z.AI: ${body.take(200)}"))
+                response.status == HttpStatusCode.Forbidden ->
+                    ApiResponse.Error(ApiError(response.status, "403 from Z.AI: ${body.take(200)}"))
                 else ->
-                    ApiResponse.Error(ApiError(response.status, "Z.AI error: ${response.status}"))
+                    ApiResponse.Error(ApiError(response.status, "Z.AI ${response.status.value}: ${body.take(200)}"))
             }
         } catch (e: Exception) {
             ApiResponse.Failure(ApiFailure(e, e.message))

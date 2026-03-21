@@ -32,10 +32,10 @@ data class ChatCompletionRequest(
  */
 @Serializable
 data class ChatCompletionResponse(
-    val id: String,
-    val choices: List<ChatChoice>,
-    val created: Long,
-    val model: String,
+    val id: String = "",
+    val choices: List<ChatChoice> = emptyList(),
+    val created: Long = 0,
+    val model: String = "",
     val usage: Usage? = null
 )
 
