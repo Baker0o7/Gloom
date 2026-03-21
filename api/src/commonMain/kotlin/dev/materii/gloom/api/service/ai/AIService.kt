@@ -85,32 +85,20 @@ class AIService(
                 temperature = temperature,
                 maxTokens   = maxTokens,
             )
-
             val bodyJson = json.encodeToString(requestBody)
             val response = httpClient.post("${baseUrl()}/chat/completions") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 header(HttpHeaders.Authorization, "Bearer $key")
                 setBody(bodyJson)
             }
-
             val body = response.bodyAsText()
-            when {
-                response.status.isSuccess() -> {
-                    return@try try {
-                        val parsed = json.decodeFromString<ChatCompletionResponse>(body)
-                        val text = parsed.choices.firstOrNull()?.message?.content?.trim() ?: ""
-                        if (text.isNotBlank()) ApiResponse.Success(parsed)
-                        else ApiResponse.Error(ApiError(response.status, "Empty response from Z.AI"))
-                    } catch (e: Exception) {
-                        ApiResponse.Failure(ApiFailure(e, "Parse error: ${body.take(300)}"))
-                    }
-                }
-                response.status == HttpStatusCode.Unauthorized ->
-                    ApiResponse.Error(ApiError(response.status, "401 from Z.AI: ${body.take(200)}"))
-                response.status == HttpStatusCode.Forbidden ->
-                    ApiResponse.Error(ApiError(response.status, "403 from Z.AI: ${body.take(200)}"))
-                else ->
-                    ApiResponse.Error(ApiError(response.status, "Z.AI ${response.status.value}: ${body.take(200)}"))
+            if (response.status.isSuccess()) {
+                val parsed = json.decodeFromString<ChatCompletionResponse>(body)
+                val text   = parsed.choices.firstOrNull()?.message?.content?.trim() ?: ""
+                if (text.isNotBlank()) ApiResponse.Success(parsed)
+                else ApiResponse.Error(ApiError(response.status, "Empty response from Z.AI"))
+            } else {
+                ApiResponse.Error(ApiError(response.status, "${response.status.value}: ${body.take(200)}"))
             }
         } catch (e: Exception) {
             ApiResponse.Failure(ApiFailure(e, e.message))
