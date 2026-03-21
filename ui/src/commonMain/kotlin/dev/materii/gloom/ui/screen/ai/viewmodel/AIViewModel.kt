@@ -74,7 +74,14 @@ class AIViewModel(
             // Prepare messages for API
             val apiMessages = _messages.toList()
 
-            val result = aiService.chat(
+            // Guard: show clear message if no key configured
+                if (!aiService.hasApiKey()) {
+                    error = "No Z.AI API key set. Open Settings → AI Settings and add your key from z.ai."
+                    isLoading = false
+                    return@launch
+                }
+
+                val result = aiService.chat(
                 messages = apiMessages,
                 model = selectedModel.id,
                 temperature = 0.7,
