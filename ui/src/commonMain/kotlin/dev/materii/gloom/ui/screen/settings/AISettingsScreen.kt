@@ -16,9 +16,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Button
@@ -29,6 +30,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -53,7 +55,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
-import dev.materii.gloom.api.service.ai.AIService
 import dev.materii.gloom.ui.component.toolbar.LargeToolbar
 import dev.materii.gloom.ui.screen.settings.viewmodel.AISettingsViewModel
 import kotlinx.coroutines.launch
@@ -66,35 +67,21 @@ class AISettingsScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     private fun Screen() {
-        val viewModel     = koinScreenModel<AISettingsViewModel>()
+        val viewModel      = koinScreenModel<AISettingsViewModel>()
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
         val snackbar       = remember { SnackbarHostState() }
         val scope          = rememberCoroutineScope()
 
-        var apiKey     by rememberSaveable { mutableStateOf(viewModel.apiKey) }
-        var apiUrl     by rememberSaveable { mutableStateOf(viewModel.apiUrl) }
-        var aiEnabled  by rememberSaveable { mutableStateOf(viewModel.aiEnabled) }
-        var keyVisible by rememberSaveable { mutableStateOf(false) }
-        var isTesting  by remember { mutableStateOf(false) }
-        var testResult by remember { mutableStateOf<Boolean?>(null) }
+        var email          by rememberSaveable { mutableStateOf(viewModel.savedEmail) }
+        var password       by rememberSaveable { mutableStateOf("") }
+        var passVisible    by rememberSaveable { mutableStateOf(false) }
+        var isLoading      by remember { mutableStateOf(false) }
+        var aiEnabled      by rememberSaveable { mutableStateOf(viewModel.aiEnabled) }
 
         Scaffold(
-            topBar = {
-                LargeToolbar(
-                    title          = "AI Settings",
-                    scrollBehavior = scrollBehavior,
-                    actions = {
-                        IconButton(onClick = {
-                            viewModel.saveSettings(apiKey, apiUrl, aiEnabled)
-                            scope.launch { snackbar.showSnackbar("Settings saved") }
-                        }) {
-                            Icon(Icons.Outlined.Check, contentDescription = "Save")
-                        }
-                    }
-                )
-            },
+            topBar = { LargeToolbar(title = "AI Settings", scrollBehavior = scrollBehavior) },
             snackbarHost = { SnackbarHost(snackbar) },
-            modifier     = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         ) { pv ->
             Column(
                 modifier = Modifier
@@ -106,156 +93,152 @@ class AISettingsScreen : Screen {
             ) {
                 Spacer(Modifier)
 
-                // ── Info card ─────────────────────────────────────────────────
+                // Info card
                 ZAiInfoCard()
 
-                // ── Enable toggle ─────────────────────────────────────────────
+                // Enable toggle
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        Modifier.fillMaxWidth().padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Column(Modifier.weight(1f)) {
                             Text("Enable AI Assistant", style = MaterialTheme.typography.titleMedium)
-                            Text(
-                                "Show AI tab and enable chat features",
+                            Text("Show AI tab and chat features",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        Switch(checked = aiEnabled, onCheckedChange = { aiEnabled = it })
+                        Switch(checked = aiEnabled, onCheckedChange = {
+                            aiEnabled = it
+                            viewModel.setAiEnabled(it)
+                        })
                     }
                 }
 
-                // ── API Key ───────────────────────────────────────────────────
-                Text("API Key", style = MaterialTheme.typography.titleSmall)
-
-                OutlinedTextField(
-                    value          = apiKey,
-                    onValueChange  = { apiKey = it; testResult = null },
-                    modifier       = Modifier.fillMaxWidth(),
-                    label          = { Text("Z.AI API Key") },
-                    placeholder    = { Text("zai-…") },
-                    singleLine     = true,
-                    shape          = RoundedCornerShape(12.dp),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    visualTransformation = if (keyVisible) VisualTransformation.None
-                                           else           PasswordVisualTransformation(),
-                    trailingIcon = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            IconButton(onClick = { keyVisible = !keyVisible }) {
-                                Icon(
-                                    if (keyVisible) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
-                                    contentDescription = if (keyVisible) "Hide" else "Show",
-                                )
-                            }
-                            if (apiKey.isNotBlank()) {
-                                IconButton(onClick = { apiKey = ""; testResult = null }) {
-                                    Icon(Icons.Outlined.Close, contentDescription = "Clear")
-                                }
-                            }
-                        }
-                    },
-                    supportingText = {
-                        Text(
-                            if (apiKey.trim() == viewModel.apiKey && apiKey.isNotBlank())
-                                "✓ Key saved"
-                            else if (apiKey.isBlank()) "Get a key at z.ai"
-                            else "Unsaved"
-                        )
-                    }
-                )
-
-                // ── Custom URL ────────────────────────────────────────────────
-                Text("API URL", style = MaterialTheme.typography.titleSmall)
-
-                OutlinedTextField(
-                    value         = apiUrl,
-                    onValueChange = { apiUrl = it },
-                    modifier      = Modifier.fillMaxWidth(),
-                    label         = { Text("Custom base URL") },
-                    placeholder   = { Text(AIService.DEFAULT_BASE_URL) },
-                    singleLine    = true,
-                    shape         = RoundedCornerShape(12.dp),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                    supportingText  = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Outlined.Info, null, Modifier.size(12.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Spacer(Modifier.width(4.dp))
-                            Text(
-                                "Leave empty to use ${AIService.DEFAULT_BASE_URL}",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-                )
-
-                // ── Test + Save ───────────────────────────────────────────────
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Button(
-                        onClick = {
-                            scope.launch {
-                                isTesting  = true
-                                testResult = null
-                                testResult = viewModel.testConnection(apiKey, apiUrl)
-                                isTesting  = false
-                            }
-                        },
-                        enabled  = apiKey.isNotBlank() && !isTesting,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        if (isTesting) {
-                            CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Testing…")
-                        } else {
-                            Text("Test Connection")
-                        }
-                    }
-
-                    Button(
-                        onClick = {
-                            viewModel.saveSettings(apiKey, apiUrl, aiEnabled)
-                            scope.launch { snackbar.showSnackbar("Settings saved") }
-                        },
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Icon(Icons.Outlined.Check, null, Modifier.size(18.dp))
-                        Spacer(Modifier.width(6.dp))
-                        Text("Save")
-                    }
-                }
-
-                // ── Test result ───────────────────────────────────────────────
-                testResult?.let { ok ->
+                // ── Signed-in state ───────────────────────────────────────────
+                if (viewModel.isSignedIn) {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors   = CardDefaults.cardColors(
-                            containerColor = if (ok) MaterialTheme.colorScheme.primaryContainer
-                                             else     MaterialTheme.colorScheme.errorContainer
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
                         )
                     ) {
                         Row(
-                            modifier          = Modifier.padding(14.dp),
+                            Modifier.fillMaxWidth().padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             Icon(
-                                if (ok) Icons.Outlined.Check else Icons.Outlined.Close,
+                                Icons.Outlined.AutoAwesome,
                                 contentDescription = null,
-                                tint = if (ok) MaterialTheme.colorScheme.onPrimaryContainer
-                                       else     MaterialTheme.colorScheme.onErrorContainer,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             )
-                            Text(
-                                if (ok) "Connected to Z.AI successfully!"
-                                else    "Connection failed. Check your key and network.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = if (ok) MaterialTheme.colorScheme.onPrimaryContainer
-                                        else     MaterialTheme.colorScheme.onErrorContainer,
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    "Signed in",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                )
+                                Text(
+                                    viewModel.savedEmail.ifBlank { "Z.AI account" },
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                )
+                            }
+                            OutlinedButton(onClick = {
+                                viewModel.signOut()
+                                email    = ""
+                                password = ""
+                                scope.launch { snackbar.showSnackbar("Signed out") }
+                            }) {
+                                Icon(Icons.Outlined.Logout, null, Modifier.size(16.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text("Sign out")
+                            }
+                        }
+                    }
+                }
+
+                // ── Login form ────────────────────────────────────────────────
+                Text(
+                    if (viewModel.isSignedIn) "Sign in with a different account" else "Sign in to Z.AI",
+                    style = MaterialTheme.typography.titleSmall,
+                )
+
+                OutlinedTextField(
+                    value         = email,
+                    onValueChange = { email = it },
+                    modifier      = Modifier.fillMaxWidth(),
+                    label         = { Text("Email") },
+                    placeholder   = { Text("you@example.com") },
+                    singleLine    = true,
+                    shape         = RoundedCornerShape(12.dp),
+                    leadingIcon   = { Icon(Icons.Outlined.Email, null) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                )
+
+                OutlinedTextField(
+                    value         = password,
+                    onValueChange = { password = it },
+                    modifier      = Modifier.fillMaxWidth(),
+                    label         = { Text("Password") },
+                    singleLine    = true,
+                    shape         = RoundedCornerShape(12.dp),
+                    leadingIcon   = { Icon(Icons.Outlined.Lock, null) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    visualTransformation = if (passVisible) VisualTransformation.None
+                                           else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { passVisible = !passVisible }) {
+                            Icon(
+                                if (passVisible) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+                                contentDescription = if (passVisible) "Hide" else "Show",
                             )
                         }
+                    },
+                )
+
+                Button(
+                    onClick = {
+                        scope.launch {
+                            isLoading = true
+                            val result = viewModel.signIn(email, password)
+                            isLoading = false
+                            result.fold(
+                                onSuccess = {
+                                    password = ""
+                                    snackbar.showSnackbar("Signed in successfully!")
+                                },
+                                onFailure = { snackbar.showSnackbar("Sign in failed: ${it.message}") }
+                            )
+                        }
+                    },
+                    enabled  = email.isNotBlank() && password.isNotBlank() && !isLoading,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                        Spacer(Modifier.width(8.dp))
+                    }
+                    Text("Sign in to Z.AI")
+                }
+
+                // Help card
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors   = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Row(Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(Icons.Outlined.Info, null,
+                            Modifier.size(16.dp).padding(top = 2.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            "Don't have an account? Sign up at z.ai — free tier includes access to GLM-4 Flash.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
 
@@ -265,13 +248,11 @@ class AISettingsScreen : Screen {
     }
 }
 
-// ─── Z.AI info card ───────────────────────────────────────────────────────────
-
 @Composable
 private fun ZAiInfoCard() {
     Surface(
-        shape    = RoundedCornerShape(16.dp),
-        color    = MaterialTheme.colorScheme.primaryContainer,
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.primaryContainer,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(
@@ -282,26 +263,16 @@ private fun ZAiInfoCard() {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment     = Alignment.CenterVertically,
             ) {
-                Icon(
-                    Icons.Outlined.AutoAwesome,
-                    null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                )
-                Text(
-                    "Z.AI — Smart Coding Assistant",
+                Icon(Icons.Outlined.AutoAwesome, null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text("Z.AI — GLM Smart Assistant",
                     style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                )
+                    color = MaterialTheme.colorScheme.onPrimaryContainer)
             }
             Text(
-                "Gloom AI is powered by Z.AI, a capable assistant optimised for code understanding, generation, and GitHub workflows.",
+                "Sign in with your z.ai account to enable the AI assistant. Free tier includes GLM-4 Flash.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-            Text(
-                "Get your API key at: z.ai",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
             )
         }
     }

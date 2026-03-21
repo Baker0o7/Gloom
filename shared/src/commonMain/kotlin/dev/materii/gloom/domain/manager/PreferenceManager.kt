@@ -31,6 +31,8 @@ class PreferenceManager(provider: SettingsProvider):
     var aiEnabled by booleanPreference("ai_enabled", true)
     var aiApiUrl by stringPreference("ai_api_url", "")
     var aiApiKey by stringPreference("ai_api_key", "")
+    var aiEmail by stringPreference("ai_email", "")
+    var aiPassword by stringPreference("ai_password", "")
 
     init {
         if (userAvatarRadius > 50) userAvatarRadius = 50
