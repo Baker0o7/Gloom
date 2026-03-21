@@ -162,9 +162,13 @@ class GraphQLService(
             .response()
     }
 
-    suspend fun getTrending(period: TrendingPeriod = TrendingPeriod.DAILY) = withContext(Dispatchers.IO) {
+    suspend fun getTrending(
+        period: TrendingPeriod = TrendingPeriod.DAILY,
+        language: String? = null,
+    ) = withContext(Dispatchers.IO) {
+        val lang = if (language != null) Optional.present(language) else Optional.absent()
         client
-            .query(TrendingQuery(period))
+            .query(TrendingQuery(period, lang))
             .addToken()
             .response()
     }

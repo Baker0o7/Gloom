@@ -1,5 +1,5 @@
-query Trending($period: TrendingPeriod!) {
-    trendingRepositories(period: $period, mobileSortOrder: true) {
+query Trending($period: TrendingPeriod!, $language: String) {
+    trendingRepositories(period: $period, language: $language, mobileSortOrder: true) {
         ...TrendingRepository
     }
 }
