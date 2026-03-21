@@ -12,7 +12,6 @@ import io.ktor.http.HttpMethod
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 class GithubApiService(
@@ -66,13 +65,12 @@ class GithubApiService(
         title: String,
         body: String,
     ): ApiResponse<String> = withContext(Dispatchers.IO) {
-        val json = Json.encodeToString(CreateIssueBody(title, body))
         client.request {
             url("$base/repos/$owner/$repo/issues")
             header(HttpHeaders.Authorization, auth())
-            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
             method = HttpMethod.Post
-            setBody(json)
+            contentType(ContentType.Application.Json)
+            setBody(CreateIssueBody(title, body))
         }
     }
 }

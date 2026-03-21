@@ -17,7 +17,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 /**
@@ -88,9 +87,9 @@ class AIService(
             )
 
             val response = httpClient.post("${baseUrl()}/chat/completions") {
-                header(HttpHeaders.ContentType, ContentType.Application.Json)
+                contentType(ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $key")
-                setBody(json.encodeToString(requestBody))
+                setBody(requestBody)
             }
 
             when {
