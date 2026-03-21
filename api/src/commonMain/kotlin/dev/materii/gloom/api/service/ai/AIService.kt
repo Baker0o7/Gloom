@@ -17,7 +17,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 /**
@@ -126,55 +125,4 @@ class AIService(
     fun createUserMessage(content: String)      = ChatMessage(role = "user",      content = content)
     fun createAssistantMessage(content: String) = ChatMessage(role = "assistant", content = content)
 
-    // ── Email + password login ────────────────────────────────────────────────
-
-    @Serializable
-    private data class SignInRequest(val email: String, val password: String)
-
-    @Serializable
-    private data class SignInResponse(
-        val token: String = "",
-        val user: SignInUser? = null,
-    )
-
-    @Serializable
-    private data class SignInUser(val name: String = "", val email: String = "")
-
-    /**
-     * Authenticates with chat.z.ai using email+password.
-     * On success stores the session token in prefs and returns it.
-     * On failure returns an error message string.
-     */
-    suspend fun signIn(email: String, password: String): Result<String> {
-        return try {
-            val response = httpClient.post("https://chat.z.ai/api/v1/auths/signin") {
-                header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                setBody(SignInRequest(email.trim(), password))
-            }
-            val responseBody = response.bodyAsText()
-            if (response.status.isSuccess()) {
-                val parsed = json.decodeFromString<SignInResponse>(responseBody)
-                if (parsed.token.isNotBlank()) {
-                    prefs.aiApiKey = parsed.token
-                    prefs.aiEmail  = email.trim()
-                    Result.success(parsed.token)
-                } else {
-                    Result.failure(Exception("No token in response: $responseBody"))
-                }
-            } else {
-                Result.failure(Exception("Login failed (${response.status.value}): ${responseBody.take(200)}"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
-    fun isSignedIn(): Boolean = prefs.aiApiKey.isNotBlank()
-    fun signedInEmail(): String = prefs.aiEmail
-
-    fun signOut() {
-        prefs.aiApiKey  = ""
-        prefs.aiEmail   = ""
-        prefs.aiPassword = ""
-    }
 }

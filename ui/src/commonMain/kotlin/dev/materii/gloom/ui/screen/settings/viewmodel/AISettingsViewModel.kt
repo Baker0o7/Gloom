@@ -11,17 +11,26 @@ class AISettingsViewModel(
     private val aiService: AIService,
 ) : ScreenModel {
 
-    val isSignedIn: Boolean get() = aiService.isSignedIn()
-    val savedEmail: String  get() = prefs.aiEmail
-    val aiEnabled: Boolean  get() = prefs.aiEnabled
+    val apiKey: String     get() = prefs.aiApiKey
+    val aiEnabled: Boolean get() = prefs.aiEnabled
 
-    /** Calls chat.z.ai/api/v1/auths/signin and stores the session token. */
-    suspend fun signIn(email: String, password: String): Result<String> =
-        aiService.signIn(email, password)
-
-    fun signOut() = aiService.signOut()
+    fun saveKey(key: String) {
+        prefs.aiApiKey = key.trim()
+    }
 
     fun setAiEnabled(enabled: Boolean) {
         prefs.aiEnabled = enabled
+    }
+
+    /** Sends a minimal test message to verify the key works. */
+    suspend fun testConnection(key: String): Boolean {
+        val old = prefs.aiApiKey
+        prefs.aiApiKey = key.trim()
+        val result = aiService.chat(
+            messages  = listOf(dev.materii.gloom.api.dto.ai.ChatMessage("user", "hi")),
+            maxTokens = 10,
+        )
+        prefs.aiApiKey = old
+        return result is dev.materii.gloom.api.util.ApiResponse.Success
     }
 }
