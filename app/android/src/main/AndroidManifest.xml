@@ -52,11 +52,10 @@
         <activity
             android:name=".ui.activity.DeepLinkActivity"
             android:exported="true"
-            android:launchMode="singleTop"
-            android:taskAffinity=".deeplink"
+            android:launchMode="singleTask"
             android:theme="@style/Theme.Gloom">
 
-            <intent-filter android:autoVerify="false">
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
