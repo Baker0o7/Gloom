@@ -115,7 +115,6 @@ data class ModelUser(
         fun fromUserProfileQuery(upq: UserProfileQuery.Data) = with(upq) {
             val isUser = upq.repositoryOwner?.userProfile != null
             val isOrg = upq.repositoryOwner?.orgProfile != null && !isUser
-            val isSupporter = user?.isSponsoredBy ?: false
 
             if (isUser) {
                 with(upq.repositoryOwner!!.userProfile!!) {
@@ -143,7 +142,7 @@ data class ModelUser(
                             ?: emptyList(),
                         canFollow = viewerCanFollow,
                         isFollowing = viewerIsFollowing,
-                        isSupporter = isSupporter,
+                        isSupporter = false,
                         isFollowingYou = isFollowingViewer,
                         contributions = contributionsCollection.contributions
                     )
@@ -174,7 +173,7 @@ data class ModelUser(
                         isMember = viewerIsAMember,
                         pinnedItems = pinnedItems.nodes?.map { ModelRepo.fromPinnedRepo(it?.pinnedRepo) }
                             ?: emptyList(),
-                        isSupporter = isSupporter
+                        isSupporter = false
                     )
                 }
             } else {
