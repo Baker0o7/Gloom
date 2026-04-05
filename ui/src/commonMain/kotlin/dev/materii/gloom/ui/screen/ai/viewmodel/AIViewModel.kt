@@ -75,7 +75,7 @@ class AIViewModel(
             val apiMessages = _messages.toList()
 
             if (!aiService.hasApiKey()) {
-                error = "No Z.AI API key set. Open Settings → AI Settings and add your key from z.ai."
+                error = "No API key set. Open Settings → AI Settings and add your key from siliconflow.cn."
                 isLoading = false
                 return@launch
             }

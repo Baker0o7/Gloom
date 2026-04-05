@@ -14,7 +14,7 @@ import dev.materii.gloom.util.SettingsProvider
 class PreferenceManager(provider: SettingsProvider):
     BasePreferenceManager(provider) {
 
-    var theme by enumPreference("theme", Theme.SYSTEM)
+    var theme by enumPreference("theme", Theme.DARK)
     var monet by booleanPreference("monet", dev.materii.gloom.util.supportsMonet)
 
     var userAvatarShape by enumPreference("user_avatar_shape", AvatarShape.Circle)

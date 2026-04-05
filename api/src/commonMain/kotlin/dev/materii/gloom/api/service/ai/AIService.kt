@@ -20,11 +20,11 @@ import io.ktor.http.isSuccess
 import kotlinx.serialization.json.Json
 
 /**
- * AI Service backed by the z.ai API (OpenAI-compatible).
+ * AI Service backed by the SiliconFlow API (OpenAI-compatible).
  *
- * Default endpoint: https://api.z.ai/v1/chat/completions
+ * Default endpoint: https://api.siliconflow.cn/v1/chat/completions
  * Users can override the base URL in Settings → AI Settings.
- * An API key from z.ai is required (https://z.ai).
+ * Free Qwen models available via SiliconFlow API.
  */
 class AIService(
     private val httpClient: HttpClient,
@@ -34,15 +34,15 @@ class AIService(
 ) {
 
     companion object {
-        const val DEFAULT_BASE_URL = "https://api.z.ai/api/paas/v4"
-        // Verified model IDs from official Z.AI Python SDK and docs
-        const val DEFAULT_MODEL    = "glm-4.7-flash"
+        const val DEFAULT_BASE_URL = "https://api.siliconflow.cn/v1"
+        // Qwen 3.6 Plus Free model
+        const val DEFAULT_MODEL    = "Qwen/Qwen3-30B-A3B:free"
 
         val AVAILABLE_MODELS = listOf(
-            ModelInfo("glm-4.7-flash", "GLM-4.7 Flash", "Z.AI", "Free tier — fast & capable"),
-            ModelInfo("glm-4.7",       "GLM-4.7",       "Z.AI", "Flagship — coding & reasoning"),
-            ModelInfo("glm-4.5-air",   "GLM-4.5 Air",   "Z.AI", "Balanced performance"),
-            ModelInfo("glm-5",         "GLM-5",         "Z.AI", "Most capable"),
+            ModelInfo("Qwen/Qwen3-30B-A3B:free", "Qwen 3.6 Plus (Free)", "Alibaba", "Free — latest Qwen3"),
+            ModelInfo("Qwen/Qwen2.5-Coder-32B-Instruct:free", "Qwen 2.5 Coder (Free)", "Alibaba", "Free — coding specialized"),
+            ModelInfo("Qwen/Qwen2.5-72B-Instruct", "Qwen 2.5 72B", "Alibaba", "Flagship model"),
+            ModelInfo("deepseek-ai/DeepSeek-V2.5:free", "DeepSeek V2.5 (Free)", "DeepSeek", "Free tier"),
         )
     }
 
@@ -55,7 +55,7 @@ class AIService(
 
     fun isEnabled(): Boolean = prefs.aiEnabled
 
-    /** Active base URL — user custom URL or the z.ai default. */
+    /** Active base URL — user custom URL or the default. */
     private fun baseUrl(): String =
         prefs.aiApiUrl.trim().ifBlank { DEFAULT_BASE_URL }.trimEnd('/')
 

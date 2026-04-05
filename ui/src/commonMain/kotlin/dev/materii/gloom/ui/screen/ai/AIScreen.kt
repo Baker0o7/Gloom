@@ -124,11 +124,11 @@ class AIScreen : Tab {
                             tint = MaterialTheme.colorScheme.primary
                         )
                         Text(
-                            text = "Set up Z.AI",
+                            text = "Set up AI",
                             style = MaterialTheme.typography.titleMedium
                         )
                         Text(
-                            text = "Add your Z.AI API key in Settings → AI Settings to start chatting.\n\nGet a key at z.ai",
+                            text = "Add your API key in Settings → AI Settings to start chatting.\n\nGet a free key at siliconflow.cn",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
