@@ -151,15 +151,14 @@ data class ModelUser(
                 val orgProfile = upq.repositoryOwner?.orgProfile
                 if (orgProfile != null) {
                     return ModelUser(
-                    ModelUser(
-                        username = login,
-                        displayName = name,
-                        bio = bio,
-                        avatar = avatarUrl.toString(),
-                        readme = readme?.contentHTML?.toString(),
+                        username = orgProfile.login,
+                        displayName = orgProfile.name,
+                        bio = orgProfile.bio,
+                        avatar = orgProfile.avatarUrl.toString(),
+                        readme = orgProfile.readme?.contentHTML?.toString(),
                         type = User.Type.ORG,
-                        website = websiteUrl.toString(),
-                        socials = twitterUsername?.let {
+                        website = orgProfile.websiteUrl.toString(),
+                        socials = orgProfile.twitterUsername?.let {
                             listOf(
                                 Social(
                                     "@$it",
@@ -168,16 +167,17 @@ data class ModelUser(
                                 )
                             )
                         } ?: emptyList(),
-                        email = publicEmail,
-                        location = location,
-                        repos = repositories.totalCount.toLong(),
-                        sponsoring = sponsoring.totalCount.toLong(),
+                        email = orgProfile.publicEmail,
+                        location = orgProfile.location,
+                        repos = orgProfile.repositories.totalCount.toLong(),
+                        sponsoring = orgProfile.sponsoring.totalCount.toLong(),
                         isMember = viewerIsAMember,
-                        pinnedItems = pinnedItems.nodes?.map { ModelRepo.fromPinnedRepo(it?.pinnedRepo) }
+                        pinnedItems = orgProfile.pinnedItems.nodes?.map { ModelRepo.fromPinnedRepo(it?.pinnedRepo) }
                             ?: emptyList(),
                         isSupporter = false
                     )
                 }
+            }
             } else {
                 ModelUser(type = User.Type.USER)
             }
