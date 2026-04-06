@@ -166,7 +166,7 @@ fun ReleaseCard(
                     ReleaseDetail(
                         icon = Icons.Custom.Commit,
                         iconDescription = stringResource(Res.strings.noun_commit),
-                        text = release.tagCommit!!.abbreviatedOid
+                        text = release.tagCommit?.abbreviatedOid ?: ""
                     )
                 }
             }

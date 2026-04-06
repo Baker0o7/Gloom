@@ -39,13 +39,19 @@ class RepoCodeViewModel(
             val repoDefaultsRes = gql.getRepoDefaults(owner, name)
 
             if (repoDefaultsRes is GraphQLResponse.Success) {
-                _uiState.emit(
-                    UiState.Loaded(
-                        id = repoDefaultsRes.data!!.id,
-                        defaultBranch = repoDefaultsRes.data!!.defaultBranchRef!!.name,
-                        latestCommit = null
+                val data = repoDefaultsRes.data
+                val defaultBranch = data?.defaultBranchRef?.name
+                if (data != null && defaultBranch != null) {
+                    _uiState.emit(
+                        UiState.Loaded(
+                            id = data.id,
+                            defaultBranch = defaultBranch,
+                            latestCommit = null
+                        )
                     )
-                )
+                } else {
+                    _uiState.emit(UiState.Error)
+                }
             } else {
                 _uiState.emit(UiState.Error)
             }

@@ -77,23 +77,26 @@ class AuthManager(
 
     fun editAccount(
         id: String,
-        token: String = accounts[id]!!.token,
-        type: Account.Type = accounts[id]!!.type,
-        baseUrl: String? = accounts[id]!!.baseUrl,
-        avatarUrl: String = accounts[id]!!.avatarUrl,
-        username: String = accounts[id]!!.username,
-        displayName: String? = accounts[id]!!.displayName,
-        notificationCount: Int = accounts[id]!!.notificationCount
-    ) = editAccount(
-        accounts[id]!!,
-        token,
-        type,
-        baseUrl,
-        avatarUrl,
-        username,
-        displayName,
-        notificationCount
-    )
+        token: String? = null,
+        type: Account.Type? = null,
+        baseUrl: String? = null,
+        avatarUrl: String? = null,
+        username: String? = null,
+        displayName: String? = null,
+        notificationCount: Int? = null
+    ) {
+        val existingAccount = accounts[id] ?: return
+        editAccount(
+            existingAccount,
+            token ?: existingAccount.token,
+            type ?: existingAccount.type,
+            baseUrl ?: existingAccount.baseUrl,
+            avatarUrl ?: existingAccount.avatarUrl,
+            username ?: existingAccount.username,
+            displayName ?: existingAccount.displayName,
+            notificationCount ?: existingAccount.notificationCount
+        )
+    }
 
     private fun editAccount(
         account: Account,

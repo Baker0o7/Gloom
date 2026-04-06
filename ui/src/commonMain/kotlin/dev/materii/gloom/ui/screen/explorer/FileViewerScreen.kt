@@ -167,7 +167,12 @@ class FileViewerScreen(
         }
 
         if (fileType == "ImageFileType" || fileType == "PdfFileType") {
-            val url = file.fileType!!.onImageFileType?.url ?: file.fileType!!.onPdfFileType!!.url
+            val fileTypeData = file.fileType
+            val url = when (fileType) {
+                "ImageFileType" -> fileTypeData?.onImageFileType?.url
+                "PdfFileType" -> fileTypeData?.onPdfFileType?.url
+                else -> null
+            }
             if (url != null) {
                 DownloadButton(
                     downloadUrl = url
@@ -222,13 +227,13 @@ class FileViewerScreen(
         file: RepoFile.File?,
         hidden: Boolean
     ) {
-        val text = when {
-            viewModel.selectedLines == null -> path.split("/").lastOrNull() ?: "File"
+        val text = when (val sl = viewModel.selectedLines) {
+            null -> path.split("/").lastOrNull() ?: "File"
             else -> stringResource(
                 Res.plurals.plural_lines_selected,
-                viewModel.selectedLines!!.count(),
-                viewModel.selectedLines!!.first,
-                viewModel.selectedLines!!.last
+                sl.count(),
+                sl.first,
+                sl.last
             )
         }
 

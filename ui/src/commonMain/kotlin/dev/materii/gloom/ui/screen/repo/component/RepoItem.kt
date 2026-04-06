@@ -62,18 +62,19 @@ fun RepoItem(
             .fillMaxWidth()
             .thenIf(card) { width(260.dp) }
     ) {
-        if (repo.owner != null) Row(
+        val ownerVal = repo.owner
+        if (ownerVal != null) Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Avatar(
-                url = repo.owner!!.avatar,
-                type = repo.owner!!.type,
+                url = ownerVal.avatar,
+                type = ownerVal.type,
                 modifier = Modifier.size(20.dp)
             )
 
             Text(
-                text = repo.owner!!.username ?: "ghost",
+                text = ownerVal.username ?: "ghost",
                 style = MaterialTheme.typography.labelMedium
             )
         }
@@ -101,11 +102,13 @@ fun RepoItem(
         }
 
         if (repo.fork == true && !card) {
-            LabeledIcon(
-                icon = Icons.Custom.Fork,
-                label = stringResource(Res.strings.label_forked_from, repo.parent!!.fullName!!),
-                iconTint = LocalContentColor.current.copy(0.6f)
-            )
+            repo.parent?.fullName?.let { parentName ->
+                LabeledIcon(
+                    icon = Icons.Custom.Fork,
+                    label = stringResource(Res.strings.label_forked_from, parentName),
+                    iconTint = LocalContentColor.current.copy(0.6f)
+                )
+            }
         }
 
         Row(

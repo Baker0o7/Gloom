@@ -112,43 +112,45 @@ data class ModelUser(
             }
         }
 
-        fun fromUserProfileQuery(upq: UserProfileQuery.Data) = with(upq) {
+        fun fromUserProfileQuery(upq: UserProfileQuery.Data): ModelUser {
             val isUser = upq.repositoryOwner?.userProfile != null
             val isOrg = upq.repositoryOwner?.orgProfile != null && !isUser
 
             if (isUser) {
-                with(upq.repositoryOwner!!.userProfile!!) {
-                    ModelUser(
-                        id = id,
-                        username = login,
-                        displayName = name,
-                        bio = bio,
-                        avatar = avatarUrl.toString(),
-                        readme = profileReadme?.contentHTML?.toString(),
+                val userProfile = upq.repositoryOwner?.userProfile
+                if (userProfile != null) {
+                    return ModelUser(
+                        id = userProfile.id,
+                        username = userProfile.login,
+                        displayName = userProfile.name,
+                        bio = userProfile.bio,
+                        avatar = userProfile.avatarUrl.toString(),
+                        readme = userProfile.profileReadme?.contentHTML?.toString(),
                         type = User.Type.USER,
-                        company = company,
-                        website = websiteUrl.toString(),
-                        socials = socialAccounts.nodes?.mapNotNull { it?.social } ?: emptyList(),
-                        repos = repositories.totalCount.toLong(),
-                        orgs = organizations.totalCount.toLong(),
-                        starred = starredRepositories.totalCount.toLong(),
-                        sponsoring = sponsoring.totalCount.toLong(),
-                        followers = followers.totalCount.toLong(),
-                        following = following.totalCount.toLong(),
+                        company = userProfile.company,
+                        website = userProfile.websiteUrl.toString(),
+                        socials = userProfile.socialAccounts.nodes?.mapNotNull { it?.social } ?: emptyList(),
+                        repos = userProfile.repositories.totalCount.toLong(),
+                        orgs = userProfile.organizations.totalCount.toLong(),
+                        starred = userProfile.starredRepositories.totalCount.toLong(),
+                        sponsoring = userProfile.sponsoring.totalCount.toLong(),
+                        followers = userProfile.followers.totalCount.toLong(),
+                        following = userProfile.following.totalCount.toLong(),
                         status = ModelStatus.fromUserProfileQuery(upq),
-                        email = email,
-                        location = location,
-                        pinnedItems = pinnedItems.nodes?.map { ModelRepo.fromPinnedRepo(it?.pinnedRepo) }
-                            ?: emptyList(),
-                        canFollow = viewerCanFollow,
-                        isFollowing = viewerIsFollowing,
+                        email = userProfile.email,
+                        location = userProfile.location,
+                        pinnedItems = userProfile.pinnedItems.nodes?.map { ModelRepo.fromPinnedRepo(it?.pinnedRepo) } ?: emptyList(),
+                        canFollow = userProfile.viewerCanFollow,
+                        isFollowing = userProfile.viewerIsFollowing,
                         isSupporter = false,
-                        isFollowingYou = isFollowingViewer,
-                        contributions = contributionsCollection.contributions
+                        isFollowingYou = userProfile.isFollowingViewer,
+                        contributions = userProfile.contributionsCollection.contributions
                     )
                 }
             } else if (isOrg) {
-                with(upq.repositoryOwner!!.orgProfile!!) {
+                val orgProfile = upq.repositoryOwner?.orgProfile
+                if (orgProfile != null) {
+                    return ModelUser(
                     ModelUser(
                         username = login,
                         displayName = name,

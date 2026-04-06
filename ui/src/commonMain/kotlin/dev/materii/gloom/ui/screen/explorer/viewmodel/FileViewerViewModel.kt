@@ -86,11 +86,11 @@ class FileViewerViewModel(
     }
 
     private fun getLinesPart(): String {
-        if (selectedLines == null) return ""
+        val sl = selectedLines ?: return ""
         return buildString {
-            append("#L${selectedLines!!.first}")
-            if (selectedLines!!.count() > 1) append("-L${selectedLines!!.last}")
-        } // Should be something like #L1-L10
+            append("#L${sl.first}")
+            if (sl.count() > 1) append("-L${sl.last}")
+        }
     }
 
     fun getFileUrl(): String {

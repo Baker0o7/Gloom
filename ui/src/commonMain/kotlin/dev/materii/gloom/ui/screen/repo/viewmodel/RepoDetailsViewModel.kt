@@ -46,15 +46,17 @@ class RepoDetailsViewModel(
     }
 
     private fun updateStarDetails(starred: Boolean) {
-        details = details?.copy(
-            viewerHasStarred = starred,
-            stargazerCount = details!!.stargazerCount + if (starred) 1 else -1
-        )
+        details?.let { d ->
+            details = d.copy(
+                viewerHasStarred = starred,
+                stargazerCount = d.stargazerCount + if (starred) 1 else -1
+            )
+        }
     }
 
     fun toggleStar() {
-        val details = details!!
-        val hasStarred = details.viewerHasStarred
+        val currentDetails = details ?: return
+        val hasStarred = currentDetails.viewerHasStarred
 
         // Optimistic update
         updateStarDetails(starred = !hasStarred)

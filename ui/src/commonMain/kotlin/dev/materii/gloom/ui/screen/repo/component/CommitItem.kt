@@ -61,9 +61,9 @@ fun CommitItem(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (commit.statusCheckRollup != null) {
+                commit.statusCheckRollup?.let { rollup ->
                     StatusIcon(
-                        status = commit.statusCheckRollup!!.state,
+                        status = rollup.state,
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -83,15 +83,18 @@ fun CommitItem(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val author = commit.author!!.gitActorDetails
-            val committer = commit.committer!!.gitActorDetails
-            val isUniqueCommiter = !commit.authoredByCommitter && committer.user != null
+            val author = commit.author?.gitActorDetails
+            val committer = commit.committer?.gitActorDetails
+            val isUniqueCommiter = !commit.authoredByCommitter && committer?.user != null
+
+            val authorAvatar = author?.avatarUrl
+            val committerAvatar = committer?.avatarUrl
 
             AvatarPile(
                 avatars = if (isUniqueCommiter) {
-                    persistentListOf(author.avatarUrl, committer.avatarUrl)
+                    persistentListOfNotNull(authorAvatar, committerAvatar)
                 } else {
-                    persistentListOf(author.avatarUrl)
+                    persistentListOfNotNull(authorAvatar)
                 }
             )
 
@@ -102,8 +105,8 @@ fun CommitItem(
                     } else {
                         Res.strings.commit_authored_by_committer
                     },
-                    author.name ?: author.user?.login ?: "ghost",
-                    committer.name ?: committer.user?.login ?: "ghost"
+                    author?.name ?: author?.user?.login ?: "ghost",
+                    committer?.name ?: committer?.user?.login ?: "ghost"
                 ) {
                     when (it) {
                         "author", "committer" -> SpanStyle(
@@ -145,6 +148,8 @@ fun CommitItem(
             if (commit.signature?.commitSignatureDetails?.isValid == true) {
                 var signatureDetailsOpened by remember { mutableStateOf(false) }
 
+                val sigDetails = commit.signature?.commitSignatureDetails
+
                 Label(
                     text = stringResource(Res.strings.label_verified),
                     textColor = MaterialTheme.gloomColorScheme.statusGreen,
@@ -153,9 +158,9 @@ fun CommitItem(
                     }
                 )
 
-                if (signatureDetailsOpened) {
+                if (signatureDetailsOpened && sigDetails != null) {
                     CommitSignatureDialog(
-                        signature = commit.signature!!.commitSignatureDetails,
+                        signature = sigDetails,
                         onDismiss = { signatureDetailsOpened = false }
                     )
                 }

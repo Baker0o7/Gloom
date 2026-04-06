@@ -184,10 +184,12 @@ class DetailsTab(
                             fontFamily = FontFamily.Monospace,
                             modifier = Modifier.padding(16.dp)
                         )
-                        Markdown(
-                            html = details.readme!!.contentHTML.toString(),
-                            Modifier.padding(horizontal = 16.dp)
-                        )
+                        details.readme?.contentHTML?.let { html ->
+                            Markdown(
+                                html = html.toString(),
+                                Modifier.padding(horizontal = 16.dp)
+                            )
+                        }
                     }
 
                     repoDetails.contributors.let {

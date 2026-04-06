@@ -107,14 +107,16 @@ open class ProfileScreen(
                         user.readme?.let { readme ->
                             Box(modifier = Modifier.padding(horizontal = 16.dp)) {
                                 val nav = LocalNavigator.currentOrThrow
-                                val repository = viewModel.user!!.username ?: "ghost"
+                                val repository = user.username ?: "ghost"
 
                                 ReadMeCard(
                                     text = readme,
                                     repository = repository,
                                     onClickRepository = {
                                         if (user.type == User.Type.USER) {
-                                            nav.navigate(RepoScreen(user.username!!, repository))
+                                            user.username?.let { username ->
+                                                nav.navigate(RepoScreen(username, repository))
+                                            }
                                         }
                                     }
                                 )
@@ -170,8 +172,9 @@ open class ProfileScreen(
             navigationIcon = { BackButton() },
             scrollBehavior = scrollBehavior,
             actions = {
-                if (!viewModel.user?.username.isNullOrBlank()) {
-                    IconButton(onClick = { shareManager.shareText("https://github.com/${viewModel.user!!.username}") }) {
+                val username = viewModel.user?.username
+                if (!username.isNullOrBlank()) {
+                    IconButton(onClick = { shareManager.shareText("https://github.com/$username") }) {
                         Icon(Icons.Filled.Share, stringResource(Res.strings.action_share))
                     }
                 }
@@ -421,10 +424,11 @@ open class ProfileScreen(
                     .background(MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp))
                     .padding(5.dp)
             ) {
-                if (status.emoji != null)
+                val emoji = status.emoji
+                if (emoji != null)
                     AsyncImage(
-                        model = EmojiUtil.emojis[status.emoji!!.replace(":", "")],
-                        contentDescription = status.emoji,
+                        model = EmojiUtil.emojis[emoji.replace(":", "")],
+                        contentDescription = emoji,
                         modifier = Modifier
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp))
@@ -432,7 +436,8 @@ open class ProfileScreen(
                             .padding(6.dp)
                     )
 
-                if (status.message != null)
+                val message = status.message
+                if (message != null)
                     Text(
                         text = status.message!!,
                         style = MaterialTheme.typography.labelLarge,

@@ -32,9 +32,10 @@ class SettingsViewModel(
 
     fun signOut() {
         val token = auth.authToken
+        val currentId = auth.currentAccount?.id
         screenModelScope.launch {
             repo.deleteAccessToken(token).ifSuccessful { ->
-                auth.removeAccount(auth.currentAccount!!.id)
+                currentId?.let { auth.removeAccount(it) }
                 auth.clearApolloCache()
                 NavigationUtil.clearRootNavigation()
                 signedOut = true

@@ -16,10 +16,11 @@ object NavigationUtil {
 
     fun Navigator.navigate(screen: Screen) {
         if (items.any { it.key == screen.key }) return
-        if (parent == null) {
+        val p = parent
+        if (p == null) {
             return push(screen)
         } else {
-            parent!!.navigate(screen)
+            p.navigate(screen)
         }
     }
 

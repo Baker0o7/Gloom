@@ -87,8 +87,9 @@ class ReleaseScreen(
                 if (viewModel.apkFile != null && dev.materii.gloom.util.Features.contains(Feature.INSTALL_APKS)) {
                     when (dialogManager.installApk) {
                         DialogState.UNKNOWN -> {
+                            val apkFile = viewModel.apkFile
                             ReleaseAssetInstallDialog(
-                                fileName = viewModel.apkFile!!.name,
+                                fileName = apkFile?.name ?: "",
                                 onClose = { dontShowAgain ->
                                     viewModel.clearApk()
                                     if (dontShowAgain == true) dialogManager.installApk =

@@ -54,24 +54,27 @@ fun CommitSignatureDialog(
                 )
 
                 if (!signature.wasSignedByGitHub) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                    ) {
-                        Avatar(
-                            url = signature.signer!!.avatarUrl,
-                            modifier = Modifier.size(28.dp)
-                        )
+                    val signer = signature.signer
+                    if (signer != null) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier
+                                .align(Alignment.CenterHorizontally)
+                        ) {
+                            Avatar(
+                                url = signer.avatarUrl,
+                                modifier = Modifier.size(28.dp)
+                            )
 
-                        Text(
-                            text = signature.signer!!.login,
-                            style = MaterialTheme.typography.labelLarge
-                        )
+                            Text(
+                                text = signer.login,
+                                style = MaterialTheme.typography.labelLarge
+                            )
+                        }
+
+                        Spacer(Modifier)
                     }
-
-                    Spacer(Modifier)
                 }
 
                 SelectionContainer {
@@ -98,13 +101,15 @@ fun CommitSignatureDialog(
                             )
                         }
 
-                        Text(
-                            text = stringResource(Res.strings.label_verified_on, signature.verifiedAt!!.format("MMM d, YYYY, hh:mm a")),
-                            style = MaterialTheme.typography.bodySmall,
-                            fontFamily = FontFamily.Monospace,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                        signature.verifiedAt?.let { verifiedAt ->
+                            Text(
+                                text = stringResource(Res.strings.label_verified_on, verifiedAt.format("MMM d, YYYY, hh:mm a")),
+                                style = MaterialTheme.typography.bodySmall,
+                                fontFamily = FontFamily.Monospace,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     }
                 }
             }
