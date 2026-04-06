@@ -182,8 +182,6 @@ data class ModelUser(
             }
         }
 
-        return ModelUser(type = User.Type.USER)
-
         fun fromJoinedOrgsQuery(joq: JoinedOrgsQuery.Node) = with(joq.orgListOrgFragment) {
             ModelUser(
                 username = login,
