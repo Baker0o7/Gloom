@@ -28,6 +28,7 @@ import dev.materii.gloom.ui.theme.gloomColorScheme
 import dev.materii.gloom.ui.util.annotatingStringResource
 import dev.materii.gloom.util.TimeUtils
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun CommitItem(
@@ -90,13 +91,14 @@ fun CommitItem(
             val authorAvatar = author?.avatarUrl
             val committerAvatar = committer?.avatarUrl
 
-            val avatars = mutableListOf<String>().apply {
-                authorAvatar?.let { add(it) }
-                if (isUniqueCommiter) committerAvatar?.let { add(it) }
-            }.toPersistentList()
+            val avatars: List<String> = if (isUniqueCommiter) {
+                listOfNotNull(authorAvatar, committerAvatar)
+            } else {
+                listOfNotNull(authorAvatar)
+            }
 
             AvatarPile(
-                avatars = avatars
+                avatars = avatars.toPersistentList()
             )
 
             Text(
