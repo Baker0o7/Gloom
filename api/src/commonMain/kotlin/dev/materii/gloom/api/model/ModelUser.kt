@@ -171,15 +171,14 @@ data class ModelUser(
                         location = orgProfile.location,
                         repos = orgProfile.repositories.totalCount.toLong(),
                         sponsoring = orgProfile.sponsoring.totalCount.toLong(),
-                        isMember = viewerIsAMember,
+                        isMember = orgProfile.viewerIsAMember,
                         pinnedItems = orgProfile.pinnedItems.nodes?.map { ModelRepo.fromPinnedRepo(it?.pinnedRepo) }
                             ?: emptyList(),
                         isSupporter = false
                     )
                 }
-            }
             } else {
-                ModelUser(type = User.Type.USER)
+                return ModelUser(type = User.Type.USER)
             }
 
         }
