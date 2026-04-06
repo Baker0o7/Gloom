@@ -260,11 +260,14 @@ private fun StepsCard() {
             Text("How to get your API key",
                 style = MaterialTheme.typography.titleSmall)
             Text(
-                "1. Open siliconflow.cn in your browser\n" +
-                "2. Sign up or log in to your account\n" +
-                "3. Go to Settings → API Keys\n" +
-                "4. Copy your free API key\n" +
-                "5. Paste it in the field below and tap Save",
+                "SiliconFlow (Free):\n" +
+                "1. Open siliconflow.cn\n" +
+                "2. Sign up and go to Settings → API Keys\n" +
+                "3. Copy your free API key\n\n" +
+                "Other Providers (OpenAI, Anthropic, Google, etc.):\n" +
+                "1. Get API key from your provider\n" +
+                "2. Update base URL if different\n" +
+                "3. Paste key and tap Save",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

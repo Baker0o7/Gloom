@@ -20,11 +20,11 @@ import io.ktor.http.isSuccess
 import kotlinx.serialization.json.Json
 
 /**
- * AI Service backed by the SiliconFlow API (OpenAI-compatible).
+ * AI Service supporting multiple LLM providers (OpenAI-compatible).
  *
- * Default endpoint: https://api.siliconflow.cn/v1/chat/completions
+ * Default: SiliconFlow (free Qwen models)
+ * Supported: OpenAI, Anthropic, Google, Groq, etc.
  * Users can override the base URL in Settings → AI Settings.
- * Free Qwen models available via SiliconFlow API.
  */
 class AIService(
     private val httpClient: HttpClient,
@@ -34,15 +34,39 @@ class AIService(
 ) {
 
     companion object {
+        // Default: SiliconFlow (free)
         const val DEFAULT_BASE_URL = "https://api.siliconflow.cn/v1"
-        // Qwen 3.6 Plus Free model
         const val DEFAULT_MODEL    = "Qwen/Qwen3-30B-A3B:free"
 
         val AVAILABLE_MODELS = listOf(
-            ModelInfo("Qwen/Qwen3-30B-A3B:free", "Qwen 3.6 Plus (Free)", "Alibaba", "Free — latest Qwen3"),
-            ModelInfo("Qwen/Qwen2.5-Coder-32B-Instruct:free", "Qwen 2.5 Coder (Free)", "Alibaba", "Free — coding specialized"),
-            ModelInfo("Qwen/Qwen2.5-72B-Instruct", "Qwen 2.5 72B", "Alibaba", "Flagship model"),
-            ModelInfo("deepseek-ai/DeepSeek-V2.5:free", "DeepSeek V2.5 (Free)", "DeepSeek", "Free tier"),
+            // SiliconFlow (Free)
+            ModelInfo("Qwen/Qwen3-30B-A3B:free", "Qwen 3.6 Plus (Free)", "Alibaba", "Free"),
+            ModelInfo("Qwen/Qwen2.5-Coder-32B-Instruct:free", "Qwen 2.5 Coder (Free)", "Alibaba", "Free - coding"),
+            ModelInfo("deepseek-ai/DeepSeek-V2.5:free", "DeepSeek V2.5 (Free)", "DeepSeek", "Free"),
+            ModelInfo("THUDM/GLM-4-Flash:free", "GLM-4 Flash (Free)", "Zhipu AI", "Free"),
+            
+            // OpenAI (requires API key)
+            ModelInfo("gpt-4o", "GPT-4o", "OpenAI", "Latest flagship"),
+            ModelInfo("gpt-4o-mini", "GPT-4o Mini", "OpenAI", "Fast & cheap"),
+            ModelInfo("gpt-4-turbo", "GPT-4 Turbo", "OpenAI", "Powerful"),
+            
+            // Anthropic (requires API key)
+            ModelInfo("claude-sonnet-4-20250514", "Claude Sonnet 4", "Anthropic", "Latest"),
+            ModelInfo("claude-3-5-sonnet-20241022", "Claude 3.5 Sonnet", "Anthropic", "Popular"),
+            ModelInfo("claude-3-haiku-20240307", "Claude 3 Haiku", "Anthropic", "Fast"),
+            
+            // Google (requires API key)
+            ModelInfo("gemini-1.5-pro", "Gemini 1.5 Pro", "Google", "Multimodal"),
+            ModelInfo("gemini-1.5-flash", "Gemini 1.5 Flash", "Google", "Fast"),
+            
+            // Groq (requires API key)
+            ModelInfo("llama-3.1-70b-versatile", "Llama 3.1 70B", "Groq", "Fast"),
+            ModelInfo("mixtral-8x7b-32768", "Mixtral 8x7B", "Groq", "Efficient"),
+            
+            // Ollama (local/self-hosted)
+            ModelInfo("ollama/llama3", "Llama 3", "Ollama", "Local"),
+            ModelInfo("ollama/codellama", "Code Llama", "Ollama", "Local coding"),
+            ModelInfo("ollama/mistral", "Mistral", "Ollama", "Local"),
         )
     }
 
@@ -73,7 +97,7 @@ class AIService(
         val key = apiKey()
         if (key.isBlank()) {
             return ApiResponse.Error(
-                ApiError(HttpStatusCode.Unauthorized, "No Z.AI API key configured. Add one in Settings → AI Settings.")
+                ApiError(HttpStatusCode.Unauthorized, "No API key configured. Add one in Settings → AI Settings.")
             )
         }
 
@@ -94,7 +118,7 @@ class AIService(
                 val parsed = json.decodeFromString<ChatCompletionResponse>(body)
                 val text   = parsed.choices.firstOrNull()?.message?.content?.trim() ?: ""
                 if (text.isNotBlank()) ApiResponse.Success(parsed)
-                else ApiResponse.Error(ApiError(response.status, "Empty response from Z.AI"))
+                else ApiResponse.Error(ApiError(response.status, "Empty response from AI"))
             } else {
                 ApiResponse.Error(ApiError(response.status, "${response.status.value}: ${body.take(200)}"))
             }

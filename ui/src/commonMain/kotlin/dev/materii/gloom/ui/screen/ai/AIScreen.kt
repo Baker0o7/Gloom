@@ -128,7 +128,7 @@ class AIScreen : Tab {
                             style = MaterialTheme.typography.titleMedium
                         )
                         Text(
-                            text = "Add your API key in Settings → AI Settings to start chatting.\n\nGet a free key at siliconflow.cn",
+                            text = "Add your API key in Settings → AI Settings to start chatting.\n\nUse SiliconFlow (free) or other OpenAI-compatible providers.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
