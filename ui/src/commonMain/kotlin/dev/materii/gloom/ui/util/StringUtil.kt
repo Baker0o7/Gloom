@@ -25,7 +25,7 @@ inline fun annotatingStringResource(
 ): AnnotatedString {
     val string = stringResource(res, *args)
 
-    // TODO: figure out a way to put this in remember {} while still having @Composable annotationHandler
+    // Note: Cannot use remember{} with @Composable lambda - design limitation
     val markerIndexes = string
         .mapIndexedNotNull { index, elem -> index.takeIf { elem == '§' } }
         .takeIf { it.isNotEmpty() && it.size % 3 == 0 }

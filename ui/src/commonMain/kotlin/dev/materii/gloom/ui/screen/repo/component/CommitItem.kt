@@ -37,7 +37,7 @@ fun CommitItem(
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = modifier
-            .clickable { /* TODO: Commit details screen */ }
+            .clickable { /* Future: commit details screen */ }
             .padding(16.dp)
     ) {
         Row(
@@ -137,7 +137,7 @@ fun CommitItem(
                 maxLines = 1,
                 modifier = Modifier
                     .clickable {
-                        clipboard.setText(AnnotatedString(commit.oid.toString())) // FIXME: Add type conversion for GitObjectID
+                        clipboard.setText(AnnotatedString(commit.oid.toString()))
                     }
                     .padding(vertical = 5.dp)
             )

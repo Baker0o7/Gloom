@@ -11,7 +11,7 @@ class MarkdownJSMessageHandler: IJsMessageHandler {
         navigator: WebViewNavigator?,
         callback: (String) -> Unit
     ) {
-        // TODO: Use for special actions such as committing suggested changes
+        // Reserved for future: commit suggested changes
     }
 
     override fun methodName(): String {

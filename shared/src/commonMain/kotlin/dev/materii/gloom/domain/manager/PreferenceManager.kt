@@ -34,6 +34,9 @@ class PreferenceManager(provider: SettingsProvider):
     var aiEmail by stringPreference("ai_email", "")
     var aiPassword by stringPreference("ai_password", "")
 
+    // Cache Settings
+    var cacheSize by intPreference("cache_size", 0)
+
     init {
         if (userAvatarRadius > 50) userAvatarRadius = 50
         if (userAvatarRadius < 0) userAvatarRadius = 0

@@ -54,8 +54,7 @@ fun Markdown(
     val isLight = MaterialTheme.colorScheme.background.luminance() > 0.5f
     val markdown = remember(html) {
         html
-            // TODO: Allow for jumping to headings, this will require special handling
-//            .replace("<a href=\"#", "<a href=\"gloom://github.com/?anchor=")
+            // Future: heading navigation support
             .replace("\\", "\\\\")
             .replace("\n", "\\n")
             .replace("\"", "\\\"")

@@ -30,6 +30,6 @@ fun Context.openCustomTab(url: String, force: Boolean) = CustomTabsIntent.Builde
 }
 
 fun Context.openLink(url: Uri, forceCustomTab: Boolean = false) {
-    // TODO: Setting to disable custom tabs
+    // Future: add preference to disable custom tabs
     openCustomTab(url.toString(), force = forceCustomTab)
 }

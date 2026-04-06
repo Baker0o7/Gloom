@@ -4,7 +4,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 
-// FIXME: Compose introduced a regression that causes an IllegalAccessException when trying to open the dialog, should either wait for the fix or downgrade at some point
+// Known Compose issue: dialog IllegalAccessException. Track: https://issuetracker.google.com/issues/370028166
 @Composable
 inline fun <reified E: Enum<E>> SettingsItemChoice(
     label: String,
