@@ -90,7 +90,7 @@ fun CommitItem(
             val authorAvatar = author?.avatarUrl
             val committerAvatar = committer?.avatarUrl
 
-            val avatars = buildList {
+            val avatars = mutableListOf<String>().apply {
                 authorAvatar?.let { add(it) }
                 if (isUniqueCommiter) committerAvatar?.let { add(it) }
             }.toPersistentList()
