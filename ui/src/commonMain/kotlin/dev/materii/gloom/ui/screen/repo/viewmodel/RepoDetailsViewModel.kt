@@ -61,13 +61,16 @@ class RepoDetailsViewModel(
         // Optimistic update
         updateStarDetails(starred = !hasStarred)
 
+        val detailsId = details?.id
+        if (detailsId == null) return
+
         screenModelScope.launch {
             isStarLoading = true
 
             if (hasStarred) {
-                gql.unstarRepo(details.id)
+                gql.unstarRepo(detailsId)
             } else {
-                gql.starRepo(details.id)
+                gql.starRepo(detailsId)
             }.ifUnsuccessful {
                 // Revert optimistic update
                 updateStarDetails(starred = hasStarred)

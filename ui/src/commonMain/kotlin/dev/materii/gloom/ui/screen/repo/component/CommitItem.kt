@@ -90,12 +90,13 @@ fun CommitItem(
             val authorAvatar = author?.avatarUrl
             val committerAvatar = committer?.avatarUrl
 
+            val avatars = buildList {
+                authorAvatar?.let { add(it) }
+                if (isUniqueCommiter) committerAvatar?.let { add(it) }
+            }.toPersistentList()
+
             AvatarPile(
-                avatars = if (isUniqueCommiter) {
-                    persistentListOfNotNull(authorAvatar, committerAvatar)
-                } else {
-                    persistentListOfNotNull(authorAvatar)
-                }
+                avatars = avatars
             )
 
             Text(
