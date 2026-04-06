@@ -180,8 +180,9 @@ data class ModelUser(
             } else {
                 return ModelUser(type = User.Type.USER)
             }
-
         }
+
+        return ModelUser(type = User.Type.USER)
 
         fun fromJoinedOrgsQuery(joq: JoinedOrgsQuery.Node) = with(joq.orgListOrgFragment) {
             ModelUser(
