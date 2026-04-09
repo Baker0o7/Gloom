@@ -10,19 +10,23 @@ abstract class BaseListViewModel<I: Any, D: Query.Data?>: ScreenModel {
     val items = Pager(PagingConfig(pageSize = 30)) {
         object: PagingSource<String, I>() {
             override suspend fun load(params: LoadParams<String>): LoadResult<String, I> {
-                val page = params.key
+                return try {
+                    val page = params.key
 
-                val response = loadPage(page)
+                    val response = loadPage(page)
 
-                val nextKey = getCursor(response)
+                    val nextKey = getCursor(response)
 
-                val nodes = createItems(response)
+                    val nodes = createItems(response)
 
-                return LoadResult.Page(
-                    data = nodes,
-                    nextKey = nextKey,
-                    prevKey = null
-                )
+                    LoadResult.Page(
+                        data = nodes,
+                        nextKey = nextKey,
+                        prevKey = null
+                    )
+                } catch (t: Throwable) {
+                    LoadResult.Error(t)
+                }
             }
 
             override fun getRefreshKey(state: PagingState<String, I>): String? =

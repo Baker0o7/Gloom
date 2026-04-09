@@ -43,9 +43,14 @@ fun App(
         Theme.SYSTEM -> isSystemInDarkTheme()
         Theme.LIGHT  -> false
         Theme.DARK   -> true
+        Theme.AMOLED -> true
     }
 
-    GloomTheme(isDark, prefs.monet) {
+    GloomTheme(
+        darkTheme = isDark,
+        dynamicColor = prefs.monet && prefs.theme != Theme.AMOLED,
+        amoled = prefs.theme == Theme.AMOLED
+    ) {
         AlertHost { alertController ->
             Navigator(
                 screens = screens,

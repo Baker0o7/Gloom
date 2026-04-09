@@ -56,8 +56,6 @@ import dev.materii.gloom.ui.screen.home.component.FollowedUserItem
 import dev.materii.gloom.ui.screen.home.component.ForkedRepoItem
 import dev.materii.gloom.ui.screen.home.component.MergedPullRequestItem
 import dev.materii.gloom.ui.screen.home.component.NewReleaseItem
-import dev.materii.gloom.ui.screen.home.component.RecommendedFollowUserItem
-import dev.materii.gloom.ui.screen.home.component.RecommendedRepoItem
 import dev.materii.gloom.ui.screen.home.component.StarredRepoItem
 import dev.materii.gloom.ui.screen.home.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
@@ -99,7 +97,10 @@ class HomeScreen : Tab {
                         scope.launch { listState.animateScrollToItem(0) }
                             .invokeOnCompletion { viewModel.refresh(items) }
                     }) {
-                        Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Scroll to top")
+                        Icon(
+                            Icons.Filled.KeyboardArrowUp,
+                            contentDescription = stringResource(Res.strings.action_scroll_to_top)
+                        )
                     }
                 }
             },
@@ -139,7 +140,7 @@ class HomeScreen : Tab {
                                     Alignment.Center
                                 ) {
                                     OutlinedButton(onClick = { items.retry() }) {
-                                        Text("Load more failed — tap to retry")
+                                        Text(stringResource(Res.strings.home_load_more_failed))
                                     }
                                 }
                             }
@@ -171,7 +172,7 @@ private fun FeedItem(feedItem: FeedQuery.Node, viewModel: HomeViewModel) {
 
         feedItem.followedUserFeedItemFragment != null -> {
             val item = feedItem.followedUserFeedItemFragment!!
-            val id   = item.followee.feedUser?.id ?: item.followee.feedOrg?.id!!
+            val id = item.followee.feedUser?.id ?: item.followee.feedOrg?.id ?: return
             FollowedUserItem(
                 item            = item,
                 followData      = viewModel.followedUsers[id],
@@ -190,16 +191,6 @@ private fun FeedItem(feedItem: FeedQuery.Node, viewModel: HomeViewModel) {
             )
         }
 
-        feedItem.recommendedRepositoryFeedItemFragment != null -> {
-            val repo = feedItem.recommendedRepositoryFeedItemFragment!!
-            RecommendedRepoItem(
-                item          = repo,
-                starData      = viewModel.starredRepos[repo.repository.feedRepository.id],
-                onStarClick   = viewModel::starRepo,
-                onUnstarClick = viewModel::unstarRepo,
-            )
-        }
-
         feedItem.forkedRepositoryFeedItemFragment != null -> {
             val repo = feedItem.forkedRepositoryFeedItemFragment!!
             ForkedRepoItem(
@@ -207,17 +198,6 @@ private fun FeedItem(feedItem: FeedQuery.Node, viewModel: HomeViewModel) {
                 starData      = viewModel.starredRepos[repo.repository.feedRepository.id],
                 onStarClick   = viewModel::starRepo,
                 onUnstarClick = viewModel::unstarRepo,
-            )
-        }
-
-        feedItem.followRecommendationFeedItemFragment != null -> {
-            val item = feedItem.followRecommendationFeedItemFragment!!
-            val id   = item.followee.feedUser?.id ?: item.followee.feedOrg?.id!!
-            RecommendedFollowUserItem(
-                item            = item,
-                followData      = viewModel.followedUsers[id],
-                onFollowClick   = viewModel::followUser,
-                onUnfollowClick = viewModel::unfollowUser,
             )
         }
 
@@ -239,7 +219,7 @@ private fun FeedItem(feedItem: FeedQuery.Node, viewModel: HomeViewModel) {
 private fun FeedEmptyState() {
     Box(Modifier.fillMaxSize(), Alignment.Center) {
         Text(
-            "Your feed is empty.\nFollow people to see their activity here.",
+            stringResource(Res.strings.home_empty),
             style     = MaterialTheme.typography.bodyMedium,
             color     = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -263,12 +243,12 @@ private fun FeedErrorState(onRetry: () -> Unit) {
                 modifier = Modifier.size(48.dp),
             )
             Text(
-                "Couldn't load your feed.\nCheck your connection and try again.",
+                stringResource(Res.strings.home_error),
                 style     = MaterialTheme.typography.bodyMedium,
                 color     = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
-            Button(onClick = onRetry) { Text("Retry") }
+            Button(onClick = onRetry) { Text(stringResource(Res.strings.action_try_again)) }
         }
     }
 }

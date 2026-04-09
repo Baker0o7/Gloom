@@ -6,11 +6,12 @@ import androidx.compose.ui.platform.LocalContext
 import dev.materii.gloom.util.supportsMonet
 
 @Composable
-actual fun getColorSchemes(darkTheme: Boolean, dynamicColor: Boolean): Pair<ColorScheme, GloomColorScheme> {
+actual fun getColorSchemes(darkTheme: Boolean, dynamicColor: Boolean, amoled: Boolean): Pair<ColorScheme, GloomColorScheme> {
     // We don't technically need to check for dynamic theming support
     // here because its locked behind a setting that itself is SDK restricted
     // but its good to be cautious anyways.
     return when {
+        amoled                                     -> amoledColorScheme() to darkGloomColorScheme()
         dynamicColor && darkTheme && supportsMonet  -> dynamicDarkColorScheme(LocalContext.current) to darkGloomColorScheme()
         dynamicColor && !darkTheme && supportsMonet -> dynamicLightColorScheme(LocalContext.current) to lightGloomColorScheme()
         darkTheme                                   -> darkColorScheme() to darkGloomColorScheme()

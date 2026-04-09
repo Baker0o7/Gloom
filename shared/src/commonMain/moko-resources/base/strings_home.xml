@@ -7,6 +7,10 @@
     <string name="published_release">§name§%1$s§ §text§published a release§</string>
     <string name="contributed_repo">§name§%1$s§ §text§contributed to§ §repo§%2$s§</string>
     <string name="recommended">Recommended for you</string>
+    <string name="home_empty">Your feed is empty.\nFollow people to see their activity here.</string>
+    <string name="home_error">Couldn\'t load your feed.\nCheck your connection and try again.</string>
+    <string name="home_load_more_failed">Load more failed. Tap to retry.</string>
+    <string name="action_scroll_to_top">Scroll to top</string>
 
     <string name="cd_followed">Followed</string>
 

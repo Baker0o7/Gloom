@@ -32,7 +32,7 @@ fun FollowedUserItem(
     val actor = item.follower
     val user = item.followee
     val userLogin = user.feedUser?.login ?: user.feedOrg?.login
-    val userId = user.feedUser?.id ?: user.feedOrg?.id!!
+    val userId = user.feedUser?.id ?: user.feedOrg?.id ?: return
     val actorText = if (user.feedUser?.isViewer == true) annotatingStringResource(
         Res.strings.followed_you,
         actor.login

@@ -11,9 +11,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 fun GloomTheme(
     darkTheme: Boolean,
     dynamicColor: Boolean,
+    amoled: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val (colors, gloomColors) = getColorSchemes(darkTheme, dynamicColor)
+    val (colors, gloomColors) = getColorSchemes(darkTheme, dynamicColor, amoled)
 
     CompositionLocalProvider(
         LocalGloomColorScheme provides gloomColors
@@ -32,6 +33,7 @@ fun GloomTheme(
  *
  * @param darkTheme Whether or not to use the dark theme variant
  * @param dynamicColor (Android 12+ only) Whether or not to use a dynamic color scheme
+ * @param amoled Whether or not to force the AMOLED color scheme
  */
 @Composable
-expect fun getColorSchemes(darkTheme: Boolean, dynamicColor: Boolean): Pair<ColorScheme, GloomColorScheme>
+expect fun getColorSchemes(darkTheme: Boolean, dynamicColor: Boolean, amoled: Boolean): Pair<ColorScheme, GloomColorScheme>

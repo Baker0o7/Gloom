@@ -1,5 +1,6 @@
 package dev.materii.gloom.ui.theme
 
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.ui.graphics.Color
 
 fun darkGloomColorScheme() = GloomColorScheme(
@@ -36,4 +37,11 @@ fun lightGloomColorScheme() = GloomColorScheme(
     alertImportant = AlertImportantLight,
     alertWarning = AlertWarningLight,
     alertCaution = AlertCautionLight
+)
+
+fun amoledColorScheme() = darkColorScheme(
+    background = Color.Black,
+    surface = Color.Black,
+    surfaceVariant = Color(0xFF121212),
+    surfaceTint = Color.Transparent
 )

@@ -85,7 +85,7 @@ fun PullRequestCard(
     onReactionClick: (ReactionContent, Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val repo = pullRequest.baseRepository!!
+    val repo = pullRequest.baseRepository ?: return
 
     ElevatedCard(
         modifier = modifier.fillMaxWidth()

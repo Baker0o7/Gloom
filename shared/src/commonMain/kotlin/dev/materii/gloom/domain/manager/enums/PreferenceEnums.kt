@@ -3,7 +3,8 @@ package dev.materii.gloom.domain.manager.enums
 enum class Theme {
     SYSTEM,
     LIGHT,
-    DARK
+    DARK,
+    AMOLED
 }
 
 enum class AvatarShape {

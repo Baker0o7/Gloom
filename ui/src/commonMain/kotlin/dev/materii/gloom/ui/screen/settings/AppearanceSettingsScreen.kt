@@ -65,6 +65,7 @@ class AppearanceSettingsScreen: Screen {
                                 Theme.SYSTEM -> getString(Res.strings.theme_system)
                                 Theme.LIGHT  -> getString(Res.strings.theme_light)
                                 Theme.DARK   -> getString(Res.strings.theme_dark)
+                                Theme.AMOLED -> getString(Res.strings.theme_amoled)
                             }
                         }
                     )

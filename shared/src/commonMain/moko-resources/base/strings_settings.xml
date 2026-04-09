@@ -15,6 +15,7 @@
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <string name="theme_amoled">AMOLED</string>
 
     <string name="appearance_av_shape">Avatar Shape</string>
     <string name="appearance_av_radius">Radius:</string>

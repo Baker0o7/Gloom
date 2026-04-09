@@ -72,7 +72,9 @@ data class CodeTheme(
             val prefs: PreferenceManager = koinInject()
             val isSystemInDarkTheme = isSystemInDarkTheme()
             val darkMode = remember(prefs.theme, isSystemInDarkTheme) {
-                (prefs.theme == Theme.DARK && prefs.theme != Theme.LIGHT) || (prefs.theme == Theme.SYSTEM && isSystemInDarkTheme)
+                prefs.theme == Theme.DARK ||
+                    prefs.theme == Theme.AMOLED ||
+                    (prefs.theme == Theme.SYSTEM && isSystemInDarkTheme)
             }
             val syntaxTheme = remember(darkMode) { SyntaxThemes.pastel(darkMode = darkMode) }
 
