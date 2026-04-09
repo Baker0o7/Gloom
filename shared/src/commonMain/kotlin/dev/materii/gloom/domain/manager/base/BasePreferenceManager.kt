@@ -23,7 +23,8 @@ abstract class BasePreferenceManager(
         prefs.getFloat(key, defaultValue)
 
     inline fun <reified E: Enum<E>> getEnum(key: String, defaultValue: E) =
-        enumValueOf<E>(getString(key, defaultValue.name))
+        runCatching { enumValueOf<E>(getString(key, defaultValue.name)) }
+            .getOrDefault(defaultValue)
 
     fun putString(key: String, value: String) = prefs.putString(key, value)
     fun putBoolean(key: String, value: Boolean) = prefs.putBoolean(key, value)
