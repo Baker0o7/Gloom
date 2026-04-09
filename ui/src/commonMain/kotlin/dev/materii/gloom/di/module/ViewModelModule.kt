@@ -1,10 +1,8 @@
 package dev.materii.gloom.di.module
 
 import dev.materii.gloom.ui.screen.notifications.viewmodel.NotificationsViewModel
-import dev.materii.gloom.ui.screen.ai.viewmodel.AIViewModel
 import dev.materii.gloom.ui.screen.issue.viewmodel.CreateIssueViewModel
 import dev.materii.gloom.ui.screen.search.viewmodel.SearchViewModel
-import dev.materii.gloom.ui.screen.settings.viewmodel.AISettingsViewModel
 import dev.materii.gloom.ui.screen.auth.viewmodel.LandingViewModel
 import dev.materii.gloom.ui.screen.explore.viewmodel.ExploreViewModel
 import dev.materii.gloom.ui.screen.explorer.viewmodel.DirectoryListingViewModel
@@ -18,6 +16,7 @@ import dev.materii.gloom.ui.screen.repo.viewmodel.*
 import dev.materii.gloom.ui.screen.settings.viewmodel.AccountSettingsViewModel
 import dev.materii.gloom.ui.screen.settings.viewmodel.AppIconSettingsViewModel
 import dev.materii.gloom.ui.screen.settings.viewmodel.AppearanceSettingsViewModel
+import dev.materii.gloom.ui.screen.settings.viewmodel.DownloadsSettingsViewModel
 import dev.materii.gloom.ui.screen.settings.viewmodel.SettingsViewModel
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
@@ -36,14 +35,13 @@ fun viewModelModule() = module {
     factoryOf(::SponsoringViewModel)
     factoryOf(::SettingsViewModel)
     factoryOf(::AppearanceSettingsViewModel)
+    factoryOf(::DownloadsSettingsViewModel)
     factoryOf(::AccountSettingsViewModel)
     factoryOf(::AppIconSettingsViewModel)
     factoryOf(::HomeViewModel)
     factoryOf(::ExploreViewModel)
     // Singleton so badge in navbar and inbox screen share the same unread count
     singleOf(::NotificationsViewModel)
-    factoryOf(::AIViewModel)
-    factoryOf(::AISettingsViewModel)
 
     factoryOf(::RepoViewModel)
     factoryOf(::RepoDetailsViewModel)

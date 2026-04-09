@@ -7,6 +7,7 @@ import dev.materii.gloom.domain.manager.base.intPreference
 import dev.materii.gloom.domain.manager.base.stringPreference
 import dev.materii.gloom.domain.manager.enums.AppIcon
 import dev.materii.gloom.domain.manager.enums.AvatarShape
+import dev.materii.gloom.domain.manager.enums.DownloadHandlerPreference
 import dev.materii.gloom.domain.manager.enums.Theme
 import dev.materii.gloom.domain.manager.enums.TrendingPeriodPreference
 import dev.materii.gloom.util.SettingsProvider
@@ -26,13 +27,7 @@ class PreferenceManager(provider: SettingsProvider):
     var trendingPeriod by enumPreference("trending_period", TRENDING_PERIOD)
 
     var appIcon by enumPreference("app_icon", AppIcon.Main)
-
-    // AI Settings
-    var aiEnabled by booleanPreference("ai_enabled", true)
-    var aiApiUrl by stringPreference("ai_api_url", "")
-    var aiApiKey by stringPreference("ai_api_key", "")
-    var aiEmail by stringPreference("ai_email", "")
-    var aiPassword by stringPreference("ai_password", "")
+    var downloadHandler by enumPreference("download_handler", DownloadHandlerPreference.SYSTEM)
 
     // Cache Settings
     var cacheSize by intPreference("cache_size", 0)

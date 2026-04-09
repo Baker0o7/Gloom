@@ -201,9 +201,9 @@ class ReleaseScreen(
                                     viewModel.downloadAsset(
                                         asset.downloadUrl,
                                         asset.contentType
-                                    ) {
+                                    ) { downloadedLocally ->
                                         alertController.showText(
-                                            "Download completed",
+                                            if (downloadedLocally) "Download completed" else "Sent to external downloader",
                                             icon = Icons.Outlined.CheckCircleOutline
                                         )
                                     }

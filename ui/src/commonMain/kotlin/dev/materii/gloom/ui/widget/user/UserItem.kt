@@ -56,7 +56,8 @@ fun UserItem(
                 modifier = Modifier.size(40.dp)
             )
             Column {
-                if (user.displayName.isNullOrEmpty()) {
+                val displayName = user.displayName?.takeIf { it.isNotBlank() }
+                if (displayName == null) {
                     Text(
                         text = user.username ?: "ghost",
                         style = MaterialTheme.typography.labelLarge.copy(
@@ -67,7 +68,7 @@ fun UserItem(
                     )
                 } else {
                     Text(
-                        text = user.displayName!!,
+                        text = displayName,
                         style = MaterialTheme.typography.labelLarge.copy(
                             fontSize = 16.sp
                         ),
@@ -85,8 +86,8 @@ fun UserItem(
                 }
             }
         }
-        if (!user.bio.isNullOrBlank()) {
-            Text(text = user.bio!!, style = MaterialTheme.typography.labelLarge)
+        user.bio?.takeIf { it.isNotBlank() }?.let { bio ->
+            Text(text = bio, style = MaterialTheme.typography.labelLarge)
         }
     }
 }

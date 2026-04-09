@@ -91,12 +91,14 @@ class SettingsScreen: Screen {
                         destination = ::AccountSettingsScreen
                     )
 
-                    SettingsCategory(
-                        icon = Icons.Outlined.SmartToy,
-                        text = "AI Assistant",
-                        subtext = "Configure AI chat settings and API URL",
-                        destination = ::AISettingsScreen
-                    )
+                    if (dev.materii.gloom.util.supportsExternalDownloader) {
+                        SettingsCategory(
+                            icon = Icons.Outlined.Download,
+                            text = stringResource(Res.strings.settings_downloads),
+                            subtext = stringResource(Res.strings.settings_downloads_description),
+                            destination = ::DownloadsSettingsScreen
+                        )
+                    }
                 }
 
                 SettingsGroup {

@@ -8,6 +8,7 @@ import java.io.File
 
 @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
 actual val supportsMonet = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+actual val supportsExternalDownloader = true
 actual val isDebug = BuildConfig.DEBUG
 
 actual val GloomPath = File(Environment.getExternalStorageDirectory(), "Gloom")

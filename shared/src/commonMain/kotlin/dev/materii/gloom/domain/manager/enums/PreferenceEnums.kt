@@ -17,3 +17,8 @@ enum class TrendingPeriodPreference {
     WEEKLY,
     MONTHLY
 }
+
+enum class DownloadHandlerPreference {
+    SYSTEM,
+    EXTERNAL
+}

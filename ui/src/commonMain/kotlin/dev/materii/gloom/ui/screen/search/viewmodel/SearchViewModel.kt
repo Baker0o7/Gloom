@@ -31,11 +31,19 @@ class SearchViewModel(
 
     private var debounceJob: Job? = null
     private var cursor: String?   = null
+    private var requestId = 0
 
     fun onQueryChange(q: String) {
         query = q
         debounceJob?.cancel()
-        if (q.isBlank()) { results.clear(); error = null; return }
+        if (q.isBlank()) {
+            results.clear()
+            error = null
+            cursor = null
+            hasMore = false
+            isLoading = false
+            return
+        }
         debounceJob = screenModelScope.launch {
             delay(350)
             search(reset = true)
@@ -53,12 +61,23 @@ class SearchViewModel(
     }
 
     private fun search(reset: Boolean) {
-        if (reset) { cursor = null; results.clear() }
+        val trimmedQuery = query.trim()
+        if (trimmedQuery.isBlank()) return
+
+        if (reset) {
+            cursor = null
+            results.clear()
+            hasMore = false
+        }
+
+        val currentRequestId = ++requestId
         val type = if (activeTab == Tab.REPOSITORIES) SearchType.REPOSITORY else SearchType.USER
         screenModelScope.launch {
             isLoading = true
             error     = null
-            val response = repo.search(query.trim(), type, cursor)
+            val response = repo.search(trimmedQuery, type, cursor)
+            if (currentRequestId != requestId) return@launch
+
             when (response) {
                 is GraphQLResponse.Success -> {
                     val nodes = response.data.search.nodes?.filterNotNull() ?: emptyList()

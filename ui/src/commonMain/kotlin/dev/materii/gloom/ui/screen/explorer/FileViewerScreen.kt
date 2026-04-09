@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.FormatColorText
@@ -23,8 +22,6 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.koin.koinScreenModel
 import dev.icerock.moko.resources.compose.stringResource
 import dev.materii.gloom.Res
@@ -33,12 +30,11 @@ import dev.materii.gloom.gql.fragment.RepoFile
 import dev.materii.gloom.ui.component.BackButton
 import dev.materii.gloom.ui.component.DownloadButton
 import dev.materii.gloom.ui.component.ErrorMessage
+import dev.materii.gloom.ui.screen.explorer.viewmodel.FileViewerViewModel
 import dev.materii.gloom.ui.screen.explorer.viewers.ImageFileViewer
 import dev.materii.gloom.ui.screen.explorer.viewers.MarkdownFileViewer
 import dev.materii.gloom.ui.screen.explorer.viewers.PdfFileViewer
 import dev.materii.gloom.ui.screen.explorer.viewers.TextFileViewer
-import dev.materii.gloom.ui.screen.ai.AICodeReviewScreen
-import dev.materii.gloom.ui.screen.explorer.viewmodel.FileViewerViewModel
 import dev.materii.gloom.ui.util.thenIf
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -198,24 +194,6 @@ class FileViewerScreen(
                 imageVector = Icons.Filled.Share,
                 contentDescription = stringResource(Res.strings.action_share)
             )
-        }
-
-        // AI code review button - only shown for text/code files
-        if (fileType == "TextFileType" || fileType == "MarkdownFileType") {
-            val aiNav = LocalNavigator.currentOrThrow
-            IconButton(onClick = {
-                val rawContent = file?.fileType?.onTextFileType?.contentRaw ?: ""
-                val path = viewModel.getFileUrl().substringAfter("blob/")
-                aiNav.push(AICodeReviewScreen(
-                    filePath    = path,
-                    fileContent = rawContent,
-                ))
-            }) {
-                Icon(
-                    imageVector        = Icons.Outlined.AutoAwesome,
-                    contentDescription = "AI Code Review"
-                )
-            }
         }
     }
 

@@ -8,6 +8,7 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import dev.materii.gloom.api.dto.notification.Notification
 import dev.materii.gloom.api.repository.GithubRepository
+import dev.materii.gloom.api.util.ApiResponse
 import dev.materii.gloom.api.util.ifSuccessful
 import kotlinx.coroutines.launch
 
@@ -36,11 +37,18 @@ class NotificationsViewModel(
         screenModelScope.launch {
             isLoading = true
             error     = null
-            repo.getNotifications().ifSuccessful { list ->
-                notifications.clear()
-                notifications.addAll(list)
+            when (val response = repo.getNotifications()) {
+                is ApiResponse.Success -> {
+                    notifications.clear()
+                    notifications.addAll(response.data)
+                }
+                is ApiResponse.Error -> {
+                    error = "Couldn't load notifications"
+                }
+                is ApiResponse.Failure -> {
+                    error = "Network error. Please try again."
+                }
             }
-            if (notifications.isEmpty()) error = "Couldn't load notifications"
             isLoading = false
         }
     }

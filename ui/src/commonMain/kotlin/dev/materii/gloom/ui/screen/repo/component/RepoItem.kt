@@ -44,6 +44,8 @@ fun RepoItem(
     card: Boolean = false
 ) {
     val nav = LocalNavigator.currentOrThrow
+    val ownerLogin = login ?: repo.owner?.username
+    val repoName = repo.name
 
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp),
@@ -55,8 +57,9 @@ fun RepoItem(
                     .background(MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp))
             }
             .clickable {
-                if (!repo.name.isNullOrBlank() && (!repo.owner?.username.isNullOrBlank() || login != null))
-                    nav.navigate(RepoScreen(login ?: repo.owner?.username!!, repo.name!!))
+                if (!repoName.isNullOrBlank() && !ownerLogin.isNullOrBlank()) {
+                    nav.navigate(RepoScreen(ownerLogin, repoName))
+                }
             }
             .padding(16.dp)
             .fillMaxWidth()

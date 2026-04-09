@@ -46,6 +46,7 @@ val OSBaseDir = when (OS.Current) {
 }
 
 actual val supportsMonet = false
+actual val supportsExternalDownloader = false
 actual val isDebug = false
 actual val GloomPath = File(OSBaseDir, "Gloom").also { it.mkdir() }
 actual val Features = emptyList<Feature>()

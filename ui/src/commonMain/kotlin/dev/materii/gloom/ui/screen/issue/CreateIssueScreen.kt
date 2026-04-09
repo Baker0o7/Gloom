@@ -13,13 +13,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -69,20 +67,7 @@ class CreateIssueScreen(
             topBar = {
                 LargeToolbar(
                     title          = "New Issue",
-                    scrollBehavior = scrollBehavior,
-                    actions = {
-                        // AI draft button
-                        IconButton(
-                            onClick  = { viewModel.aiDraftBody(title) { body = it } },
-                            enabled  = title.isNotBlank() && !viewModel.aiLoading,
-                        ) {
-                            if (viewModel.aiLoading) {
-                                CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
-                            } else {
-                                Icon(Icons.Outlined.AutoAwesome, "AI draft body")
-                            }
-                        }
-                    }
+                    scrollBehavior = scrollBehavior
                 )
             },
             snackbarHost = { SnackbarHost(snackbar) },
@@ -115,7 +100,7 @@ class CreateIssueScreen(
                     onValueChange = { body = it },
                     modifier      = Modifier.fillMaxWidth().height(220.dp),
                     label         = { Text("Description (optional)") },
-                    placeholder   = { Text("Describe the issue…\n\nTip: tap ✨ to let AI draft this for you.") },
+                    placeholder   = { Text("Describe the issue…") },
                 )
 
                 Spacer(Modifier.height(4.dp))

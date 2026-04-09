@@ -38,8 +38,8 @@ fun LibraryItem(
     Column(
         verticalArrangement = Arrangement.spacedBy(6.dp),
         modifier = modifier
-            .clickable(enabled = library.website != null) {
-                linkHandler.openLink(library.website!!)
+            .clickable(enabled = !library.website.isNullOrBlank()) {
+                library.website?.takeIf { it.isNotBlank() }?.let(linkHandler::openLink)
             }
             .fillMaxWidth()
             .padding(16.dp)
@@ -51,9 +51,9 @@ fun LibraryItem(
             fontWeight = FontWeight.Bold
         )
 
-        if (!library.description.isNullOrBlank()) {
+        library.description?.takeIf { it.isNotBlank() }?.let { description ->
             Text(
-                text = library.description!!,
+                text = description,
                 style = MaterialTheme.typography.bodyMedium,
                 fontSize = 15.sp,
                 color = LocalContentColor.current.copy(alpha = 0.7f)

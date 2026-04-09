@@ -59,10 +59,10 @@ actual class ReleaseViewModel(
         }
     }
 
-    actual fun downloadAsset(url: String, mimeType: String, onFinish: () -> Unit) {
-        downloadManager.download(url) {
-            onFinish()
-            if (mimeType == "application/vnd.android.package-archive") apkFile = File(it)
+    actual fun downloadAsset(url: String, mimeType: String, onFinish: (Boolean) -> Unit) {
+        downloadManager.download(url, mimeType) {
+            onFinish(it != null)
+            if (it != null && mimeType == "application/vnd.android.package-archive") apkFile = File(it)
         }
     }
 

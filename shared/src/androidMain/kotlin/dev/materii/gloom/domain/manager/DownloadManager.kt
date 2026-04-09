@@ -12,6 +12,7 @@ import android.os.Looper
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import com.benasher44.uuid.uuid4
+import dev.materii.gloom.domain.manager.enums.DownloadHandlerPreference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,7 +24,8 @@ import android.app.DownloadManager as AndroidDownloadManager
 
 actual class DownloadManager(
     private val context: Context,
-    private val authManager: AuthManager
+    private val authManager: AuthManager,
+    private val prefs: PreferenceManager
 ) {
 
     private val downloadManager = context.getSystemService<AndroidDownloadManager>()!!
@@ -33,7 +35,15 @@ actual class DownloadManager(
         Environment.DIRECTORY_DOWNLOADS
     ).resolve("Gloom")
 
-    actual fun download(url: String, block: (String) -> Unit) {
+    actual fun download(url: String, mimeType: String?, block: (String?) -> Unit) {
+        if (
+            prefs.downloadHandler == DownloadHandlerPreference.EXTERNAL &&
+            openExternalDownloader(url, mimeType)
+        ) {
+            Handler(Looper.getMainLooper()).post { block(null) }
+            return
+        }
+
         val name = url.toUri().lastPathSegment ?: "${uuid4()}.blob"
         downloadScope.launch {
             download(url, File(gloomDownloadFolder, name)).also {
@@ -45,6 +55,21 @@ actual class DownloadManager(
             }
         }
     }
+
+    private fun openExternalDownloader(url: String, mimeType: String?): Boolean = runCatching {
+        val uri = url.toUri()
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            if (mimeType.isNullOrBlank()) {
+                data = uri
+            } else {
+                setDataAndType(uri, mimeType)
+            }
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(Intent.createChooser(intent, null).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        })
+    }.isSuccess
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     suspend fun download(url: String, out: File): File {

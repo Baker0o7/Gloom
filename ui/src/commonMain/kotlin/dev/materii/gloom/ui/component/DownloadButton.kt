@@ -19,18 +19,21 @@ fun DownloadButton(
     downloadUrl: String,
     modifier: Modifier = Modifier,
     fileName: String = downloadUrl.split("/").lastOrNull() ?: "${uuid4()}.blob",
-    onDownloadFinish: (String) -> Unit = {}
+    mimeType: String? = null,
+    onDownloadFinish: (String?) -> Unit = {}
 ) {
     val downloadManager: DownloadManager = koinInject()
     val alertController = LocalAlertController.current
     val downloadingText = stringResource(Res.strings.msg_downloading_file, fileName)
     val downloadedText = stringResource(Res.strings.msg_download_completed)
+    val sentToExternalText = stringResource(Res.strings.msg_download_sent_external)
 
     IconButton(
         onClick = {
             alertController.showText(downloadingText, icon = Icons.Filled.Download)
-            downloadManager.download(downloadUrl) {
-                alertController.showText(downloadedText, icon = Icons.Outlined.CheckCircleOutline)
+            downloadManager.download(downloadUrl, mimeType) {
+                val message = if (it == null) sentToExternalText else downloadedText
+                alertController.showText(message, icon = Icons.Outlined.CheckCircleOutline)
                 onDownloadFinish(it)
             }
         },

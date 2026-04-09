@@ -4,11 +4,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Scaffold
@@ -23,7 +20,6 @@ import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import com.benasher44.uuid.uuid4
 import dev.materii.gloom.domain.manager.AuthManager
-import dev.materii.gloom.domain.manager.PreferenceManager
 import dev.materii.gloom.ui.component.Avatar
 import dev.materii.gloom.ui.component.navbar.LongClickableNavBarItem
 import dev.materii.gloom.ui.screen.notifications.viewmodel.NotificationsViewModel
@@ -44,9 +40,6 @@ class RootScreen: Screen {
         var accountSwitcherVisible by remember {
             mutableStateOf(false)
         }
-        
-        val prefs: PreferenceManager = koinInject()
-        val aiEnabled = prefs.aiEnabled
 
         if (accountSwitcherVisible) {
             AccountSwitcherSheet(
@@ -55,28 +48,11 @@ class RootScreen: Screen {
         }
 
         TabNavigator(tab = RootTab.HOME.tab) { nav ->
-            // Hide FAB when on AI screen or AI is disabled
-            val showFab = aiEnabled && nav.current != RootTab.AI.tab
-            
             Scaffold(
                 bottomBar = {
                     TabBar(
                         onProfileLongClick = { accountSwitcherVisible = true }
                     )
-                },
-                floatingActionButton = {
-                    // AI Floating Action Button - hidden when on AI screen or AI is disabled
-                    if (showFab) {
-                        FloatingActionButton(
-                            onClick = { nav.current = RootTab.AI.tab },
-                            shape = CircleShape
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.AutoAwesome,
-                                contentDescription = "AI Assistant"
-                            )
-                        }
-                    }
                 }
             ) {
                 Box(Modifier.padding(bottom = it.calculateBottomPadding() - DimenUtil.navBarPadding)) {
@@ -95,7 +71,7 @@ class RootScreen: Screen {
         val navigator = LocalTabNavigator.current
 
         NavigationBar {
-            RootTab.entries.filter { it != RootTab.AI }.forEach { rootTab ->
+            RootTab.entries.forEach { rootTab ->
                 val badge = if (rootTab == RootTab.NOTIFICATIONS && notifVM.unreadCount > 0)
                     notifVM.unreadCount else null
 

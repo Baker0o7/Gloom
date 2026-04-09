@@ -9,9 +9,7 @@ import dev.materii.gloom.api.service.GithubApiService
 import dev.materii.gloom.api.service.GithubAuthApiService
 import dev.materii.gloom.api.service.GraphQLService
 import dev.materii.gloom.api.service.HttpService
-import dev.materii.gloom.api.service.ai.AIService
 import dev.materii.gloom.domain.manager.AuthManager
-import dev.materii.gloom.domain.manager.PreferenceManager
 import dev.materii.gloom.util.Logger
 import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
@@ -28,13 +26,6 @@ fun serviceModule() = module {
 
     fun provideApiService(httpService: HttpService, authManager: AuthManager) =
         GithubApiService(httpService, authManager)
-
-    fun provideAIService(
-        client: HttpClient,
-        json: Json,
-        authManager: AuthManager,
-        prefs: PreferenceManager
-    ): AIService = AIService(client, json, authManager, prefs)
 
     fun provideApolloClient(logger: Logger): ApolloClient {
         return ApolloClient.Builder()
@@ -65,10 +56,6 @@ fun serviceModule() = module {
 
     single {
         provideApiService(get(named("Rest")), get())
-    }
-
-    single {
-        provideAIService(get(named("AI")), get(), get(), get())
     }
 
     singleOf(::provideApolloClient)

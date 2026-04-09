@@ -54,9 +54,9 @@ actual class ReleaseViewModel(
         }
     }
 
-    actual fun downloadAsset(url: String, mimeType: String, onFinish: () -> Unit) {
-        downloadManager.download(url) {
-            onFinish()
+    actual fun downloadAsset(url: String, mimeType: String, onFinish: (Boolean) -> Unit) {
+        downloadManager.download(url, mimeType) {
+            onFinish(it != null)
         }
     }
 

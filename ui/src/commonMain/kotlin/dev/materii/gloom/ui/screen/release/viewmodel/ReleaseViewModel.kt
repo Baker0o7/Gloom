@@ -28,7 +28,7 @@ expect class ReleaseViewModel: BaseListViewModel<ReleaseAssetFragment, ReleaseDe
 
     fun react(reaction: ReactionContent, unreact: Boolean)
 
-    fun downloadAsset(url: String, mimeType: String, onFinish: () -> Unit)
+    fun downloadAsset(url: String, mimeType: String, onFinish: (Boolean) -> Unit)
 
     fun clearApk()
 

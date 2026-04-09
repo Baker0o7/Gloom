@@ -113,6 +113,8 @@ fun ReactionRow(
                 else
                     MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp) to MaterialTheme.colorScheme.onSurface
 
+            val emoji = REACTION_EMOJIS[reaction.content] ?: return@forEach
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -123,7 +125,7 @@ fun ReactionRow(
                     .padding(horizontal = 8.dp, vertical = 6.dp)
             ) {
                 Text(
-                    text = REACTION_EMOJIS[reaction.content]!!,
+                    text = emoji,
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(

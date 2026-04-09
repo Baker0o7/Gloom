@@ -10,7 +10,6 @@ import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.header
-import io.ktor.http.HttpStatusCode
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
@@ -83,33 +82,6 @@ fun httpModule() = module {
         }
     }
 
-    fun provideAIClient(
-        json: Json,
-        logger: Logger
-    ): HttpClient {
-        return HttpClient(CIO) {
-            install(HttpRequestRetry) {
-                maxRetries = 4
-                retryIf { _, httpResponse ->
-                    val code = httpResponse.status.value
-                    // Retry on server errors AND 429 rate-limit
-                    code == 429 || (code >= 500)
-                }
-                retryOnExceptionIf { _, error ->
-                    error is HttpRequestTimeoutException
-                }
-                delayMillis { retry ->
-                    // Exponential backoff: 2s, 4s, 8s, 16s
-                    2000L * (1L shl (retry - 1))
-                }
-            }
-            install(ContentNegotiation) {
-                json(json)
-            }
-            installLogging(logger)
-        }
-    }
-
     single {
         Json {
             ignoreUnknownKeys = true
@@ -122,10 +94,6 @@ fun httpModule() = module {
 
     single(named("Rest")) {
         provideRestClient(get(), get())
-    }
-
-    single(named("AI")) {
-        provideAIClient(get(), get())
     }
 
 }
