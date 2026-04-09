@@ -22,8 +22,8 @@ android {
         applicationId = "dev.materii.gloom"
         minSdk = 21
         targetSdk = 35
-        versionCode = 10081
-        versionName = "1.0.81"
+        versionCode = 10082
+        versionName = "1.0.82"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
