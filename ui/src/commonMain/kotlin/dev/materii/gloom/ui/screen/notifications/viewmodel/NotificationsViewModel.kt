@@ -42,6 +42,9 @@ class NotificationsViewModel(
                     notifications.clear()
                     notifications.addAll(response.data)
                 }
+                is ApiResponse.Empty -> {
+                    notifications.clear()
+                }
                 is ApiResponse.Error -> {
                     error = "Couldn't load notifications"
                 }

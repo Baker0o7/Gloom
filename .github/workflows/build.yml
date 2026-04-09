@@ -1,9 +1,15 @@
 name: Build APK
 
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   push:
     branches:
-      - '*'
+      - '**'
     tags:
       - 'v*'
     paths-ignore:
@@ -13,7 +19,7 @@ on:
       - 'FUNDING.yml'
   pull_request:
     branches:
-      - '*'
+      - '**'
     paths-ignore:
       - '**.md'
       - '.idea/*'

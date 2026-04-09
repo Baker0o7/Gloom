@@ -88,11 +88,17 @@
     <!-- Accounts -->
     <string name="settings_accounts">Accounts</string>
     <string name="settings_accounts_description">Add or switch accounts</string>
+    <string name="settings_downloads">Downloads</string>
+    <string name="settings_downloads_description">Choose how files are downloaded</string>
 
     <string name="action_add_account">Add account</string>
     <string name="action_sign_out_all">Sign out of all accounts</string>
 
     <string name="cd_enterprise_domain">Enterprise domain: %1$s</string>
+    <string name="downloads_handler">Downloader</string>
+    <string name="downloads_handler_description">Pick the app used for downloads</string>
+    <string name="downloads_handler_system">Built-in downloader</string>
+    <string name="downloads_handler_external">External downloader</string>
     <!--          -->
 
     <!-- Development -->
