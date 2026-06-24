@@ -56,7 +56,7 @@ class SearchViewModel(
         if (query.isNotBlank()) search(reset = true)
     }
 
-    fun setLanguageFilter(lang: String?) {
+    fun onLanguageFilterChange(lang: String?) {
         languageFilter = lang
         if (query.isNotBlank()) search(reset = true)
     }

@@ -133,7 +133,7 @@ class SearchScreen : Screen {
                             val selected = viewModel.languageFilter == lang
                             FilterChip(
                                 selected = selected,
-                                onClick  = { viewModel.setLanguageFilter(if (selected) null else lang) },
+                                onClick  = { viewModel.onLanguageFilterChange(if (selected) null else lang) },
                                 label    = { Text(lang ?: "All", style = MaterialTheme.typography.labelSmall) },
                             )
                         }
@@ -183,7 +183,7 @@ class SearchScreen : Screen {
                                     style = MaterialTheme.typography.titleSmall)
                                 if (viewModel.languageFilter != null) {
                                     TextButton(
-                                        onClick = { viewModel.setLanguageFilter(null) }
+                                        onClick = { viewModel.onLanguageFilterChange(null) }
                                     ) { Text("Clear language filter") }
                                 }
                             }
