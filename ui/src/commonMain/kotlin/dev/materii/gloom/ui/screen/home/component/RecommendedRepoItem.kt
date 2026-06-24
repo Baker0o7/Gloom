@@ -28,11 +28,12 @@ fun RecommendedRepoItem(
             iconVector  = Icons.Outlined.BookmarkBorder,
             iconDescription = "Recommended",
         )
+        val repoId = item.repository.feedRepository.id
         FeedRepoCard(
             repo          = item.repository.feedRepository,
             starData      = starData,
-            onStarClick   = onStarClick,
-            onUnstarClick = onUnstarClick,
+            onStarClick   = { onStarClick(repoId) },
+            onUnstarClick = { onUnstarClick(repoId) },
         )
     }
 }
