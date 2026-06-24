@@ -56,6 +56,8 @@ import dev.materii.gloom.ui.screen.home.component.FollowedUserItem
 import dev.materii.gloom.ui.screen.home.component.ForkedRepoItem
 import dev.materii.gloom.ui.screen.home.component.MergedPullRequestItem
 import dev.materii.gloom.ui.screen.home.component.NewReleaseItem
+import dev.materii.gloom.ui.screen.home.component.RecommendedFollowUserItem
+import dev.materii.gloom.ui.screen.home.component.RecommendedRepoItem
 import dev.materii.gloom.ui.screen.home.component.StarredRepoItem
 import dev.materii.gloom.ui.screen.home.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
@@ -129,7 +131,7 @@ class HomeScreen : Tab {
                             contentType = items.itemContentType(),
                         ) { index ->
                             items[index]?.let { FeedItem(it, viewModel) }
-                            ThinDivider()
+                            if (index < items.itemCount - 1) ThinDivider()
                         }
 
                         // Append error footer

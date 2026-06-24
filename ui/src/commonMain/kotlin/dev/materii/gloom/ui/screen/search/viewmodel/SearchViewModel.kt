@@ -28,6 +28,7 @@ class SearchViewModel(
     var error     by mutableStateOf<String?>(null)
     var hasMore   by mutableStateOf(false)
         private set
+    var languageFilter by mutableStateOf<String?>(null)
 
     private var debounceJob: Job? = null
     private var cursor: String?   = null
@@ -55,6 +56,11 @@ class SearchViewModel(
         if (query.isNotBlank()) search(reset = true)
     }
 
+    fun setLanguageFilter(lang: String?) {
+        languageFilter = lang
+        if (query.isNotBlank()) search(reset = true)
+    }
+
     fun loadMore() {
         if (!hasMore || isLoading) return
         search(reset = false)
@@ -72,10 +78,14 @@ class SearchViewModel(
 
         val currentRequestId = ++requestId
         val type = if (activeTab == Tab.REPOSITORIES) SearchType.REPOSITORY else SearchType.USER
+        // Apply language filter to query for repos
+        val finalQuery = if (type == SearchType.REPOSITORY && languageFilter != null)
+            "$trimmedQuery language:${languageFilter!!}"
+        else trimmedQuery
         screenModelScope.launch {
             isLoading = true
             error     = null
-            val response = repo.search(trimmedQuery, type, cursor)
+            val response = repo.search(finalQuery, type, cursor)
             if (currentRequestId != requestId) return@launch
 
             when (response) {
