@@ -8,23 +8,12 @@ env:
 
 on:
   push:
-    branches:
-      - '**'
-    tags:
-      - 'v*'
-    paths-ignore:
-      - '**.md'
-      - '.idea/*'
-      - 'LICENSE'
-      - 'FUNDING.yml'
+    branches: ['**']
+    tags: ['v*']
+    paths-ignore: ['**.md', '.idea/*', 'LICENSE', 'FUNDING.yml']
   pull_request:
-    branches:
-      - '**'
-    paths-ignore:
-      - '**.md'
-      - '.idea/*'
-      - 'LICENSE'
-      - 'FUNDING.yml'
+    branches: ['**']
+    paths-ignore: ['**.md', '.idea/*', 'LICENSE', 'FUNDING.yml']
   workflow_dispatch:
 
 jobs:
@@ -43,10 +32,23 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build debug APK
+        env:
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: ./gradlew :app:android:assembleDebug
 
-      - name: Build release APK
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch' || github.base_ref == 'main'
+      - name: Rename debug APK
+        run: |
+          VERSION="${GITHUB_REF_NAME:-debug}"
+          cp app/android/build/outputs/apk/debug/gloom-debug.apk \
+             "app/android/build/outputs/apk/debug/Gloom-${VERSION}-debug.apk"
+
+      - name: Build release APK (if signing keys available)
+        if: |
+          (github.ref == 'refs/heads/main' ||
+           startsWith(github.ref, 'refs/tags/v') ||
+           github.event_name == 'workflow_dispatch') &&
+          secrets.KEYSTORE_BASE64 != ''
         env:
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
@@ -55,28 +57,40 @@ jobs:
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > release.jks
           ./gradlew :app:android:packageRelease
-          rm release.jks
+          rm -f release.jks
+          VERSION="${GITHUB_REF_NAME:-release}"
+          cp app/android/build/outputs/apk/release/gloom-release.apk \
+             "app/android/build/outputs/apk/release/Gloom-${VERSION}-release.apk"
 
-      - name: Upload debug APK
+      - name: Upload debug APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: gloom-debug
-          path: app/android/build/outputs/apk/debug/gloom-debug.apk
+          name: Gloom-debug
+          path: app/android/build/outputs/apk/debug/Gloom-*-debug.apk
+          if-no-files-found: warn
 
-      - name: Upload release APK
+      - name: Upload release APK artifact
+        if: |
+          (github.ref == 'refs/heads/main' ||
+           startsWith(github.ref, 'refs/tags/v') ||
+           github.event_name == 'workflow_dispatch') &&
+          secrets.KEYSTORE_BASE64 != ''
         uses: actions/upload-artifact@v4
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch' || github.base_ref == 'main'
         with:
-          name: gloom-release
-          path: app/android/build/outputs/apk/release/gloom-release.apk
+          name: Gloom-release
+          path: app/android/build/outputs/apk/release/Gloom-*-release.apk
+          if-no-files-found: warn
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          files: |
-            app/android/build/outputs/apk/debug/gloom-debug.apk
-            app/android/build/outputs/apk/release/gloom-release.apk
+          name: "Gloom ${{ github.ref_name }}"
+          tag_name: ${{ github.ref_name }}
           generate_release_notes: true
+          fail_on_unmatched_files: false
+          files: |
+            app/android/build/outputs/apk/debug/Gloom-*-debug.apk
+            app/android/build/outputs/apk/release/Gloom-*-release.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
