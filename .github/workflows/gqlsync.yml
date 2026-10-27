@@ -13,6 +13,8 @@ on:
 
 jobs:
   sync-graphql-schema:
+    # Needs GLOOM_INTROSPECTION_TOKEN; skip on forks
+    if: github.repository_owner == 'MateriiApps'
     runs-on: ubuntu-latest
     permissions:
       contents: write

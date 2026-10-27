@@ -61,10 +61,11 @@ class AccountSettingsScreen: Screen {
                 },
                 onDismiss = { viewModel.closeSignOutDialog() },
                 onSignOutClick = {
-                    if (viewModel.attemptedSignOutId == null)
+                    val signOutId = viewModel.attemptedSignOutId
+                    if (signOutId == null)
                         viewModel.signOutAll()
                     else
-                        viewModel.signOut(viewModel.attemptedSignOutId!!)
+                        viewModel.signOut(signOutId)
                 }
             )
         }

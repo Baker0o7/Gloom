@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -219,7 +221,7 @@ private fun FeedItem(feedItem: FeedQuery.Node, viewModel: HomeViewModel) {
 
 @Composable
 private fun FeedEmptyState() {
-    Box(Modifier.fillMaxSize(), Alignment.Center) {
+    Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), Alignment.Center) {
         Text(
             stringResource(Res.strings.home_empty),
             style     = MaterialTheme.typography.bodyMedium,
@@ -232,7 +234,7 @@ private fun FeedEmptyState() {
 
 @Composable
 private fun FeedErrorState(onRetry: () -> Unit) {
-    Box(Modifier.fillMaxSize(), Alignment.Center) {
+    Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), Alignment.Center) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),

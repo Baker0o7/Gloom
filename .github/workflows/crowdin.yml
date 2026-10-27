@@ -14,6 +14,8 @@ on:
 
 jobs:
   sync-crowdin:
+    # Needs CROWDIN_ID / CROWDIN_TOKEN secrets; skip on forks that don't define them
+    if: github.repository_owner == 'MateriiApps'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

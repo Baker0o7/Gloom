@@ -79,8 +79,9 @@ class SearchViewModel(
         val currentRequestId = ++requestId
         val type = if (activeTab == Tab.REPOSITORIES) SearchType.REPOSITORY else SearchType.USER
         // Apply language filter to query for repos
-        val finalQuery = if (type == SearchType.REPOSITORY && languageFilter != null)
-            "$trimmedQuery language:${languageFilter!!}"
+        val activeLanguage = languageFilter
+        val finalQuery = if (type == SearchType.REPOSITORY && activeLanguage != null)
+            "$trimmedQuery language:$activeLanguage"
         else trimmedQuery
         screenModelScope.launch {
             isLoading = true

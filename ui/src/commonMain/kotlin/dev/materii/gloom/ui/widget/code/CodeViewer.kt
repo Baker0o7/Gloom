@@ -100,9 +100,9 @@ fun CodeViewer(
                                     val itemPressed = verticalScrollState.getItemAtOffset(offset)
                                     val lineNumber = itemPressed?.index?.plus(1)
                                     lineNumber?.let {
-                                        onSelectLines!!(
+                                        onSelectLines?.invoke(
                                             lineNumber..lineNumber,
-                                            lines[lineNumber - 1].trimIndent()
+                                            lines.getOrNull(lineNumber - 1)?.trimIndent().orEmpty()
                                         )
                                     }
                                 }
@@ -121,7 +121,7 @@ fun CodeViewer(
                                             else                              -> linesSelected
                                         }
 
-                                        onSelectLines!!(
+                                        onSelectLines?.invoke(
                                             if (newRange.isEmpty()) null else newRange,
                                             lines
                                                 .subList(newRange.first - 1, newRange.last)
