@@ -17,9 +17,11 @@ object EmojiUtil: KoinComponent {
         @Composable get() {
             if (_emojis != null) return _emojis!!
             val text by Res.files.emoji_json.readTextAsState()
-            if (text == null) return emptyMap()
-            _emojis = json.decodeFromString<Map<String, String>>(text!!)
-            return _emojis!!
+            val raw = text ?: return emptyMap()
+            val parsed = runCatching { json.decodeFromString<Map<String, String>>(raw) }
+                .getOrDefault(emptyMap())
+            _emojis = parsed
+            return parsed
         }
 
 }

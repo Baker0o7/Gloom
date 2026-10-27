@@ -97,9 +97,9 @@ class FileViewerScreen(
         onHideToggle: () -> Unit
     ) {
         when (file?.fileType?.__typename) {
-            "MarkdownFileType" -> {
+            "MarkdownFileType" -> file.fileType?.onMarkdownFileType?.let { markdown ->
                 MarkdownFileViewer(
-                    markdownFile = file.fileType?.onMarkdownFileType!!,
+                    markdownFile = markdown,
                     rawFile = viewModel.rawMarkdown,
                     showRaw = viewModel.showRawMarkdown,
                     rawHasError = viewModel.rawMarkdownHasError,
@@ -112,8 +112,8 @@ class FileViewerScreen(
                 )
             }
 
-            "ImageFileType" -> ImageFileViewer(file.fileType?.onImageFileType!!)
-            "PdfFileType" -> PdfFileViewer(file.fileType?.onPdfFileType!!)
+            "ImageFileType" -> file.fileType?.onImageFileType?.let { ImageFileViewer(it) }
+            "PdfFileType" -> file.fileType?.onPdfFileType?.let { PdfFileViewer(it) }
 
             "TextFileType" -> {
                 file.fileType?.onTextFileType?.contentRaw?.let { content ->
