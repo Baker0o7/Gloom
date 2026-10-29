@@ -8,11 +8,11 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import dev.materii.gloom.api.repository.GraphQLRepository
 import dev.materii.gloom.api.util.fold
-import dev.materii.gloom.api.util.ifSuccessful
 import dev.materii.gloom.domain.manager.PreferenceManager
 import dev.materii.gloom.domain.manager.enums.TrendingPeriodPreference
 import dev.materii.gloom.gql.fragment.TrendingRepository
 import dev.materii.gloom.gql.type.TrendingPeriod
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class ExploreViewModel(
@@ -27,6 +27,11 @@ class ExploreViewModel(
     var isLoading by mutableStateOf(false)
         private set
 
+    var hasError by mutableStateOf(false)
+        private set
+
+    private var loadJob: Job? = null
+
     var trendingPeriod by mutableStateOf(preferenceManager.trendingPeriod)
         private set
 
@@ -37,12 +42,19 @@ class ExploreViewModel(
     // PUBLIC
 
     fun loadTrending() {
-        screenModelScope.launch {
+        // Cancel any in-flight load so a slow older response can't overwrite a newer one
+        loadJob?.cancel()
+        loadJob = screenModelScope.launch {
             isLoading = true
-            graphQLRepository.getTrending(trendingPeriod.toApi(), language = "Kotlin").ifSuccessful { trending ->
-                trendingRepos.clear()
-                trendingRepos.addAll(trending)
-            }
+            hasError = false
+            graphQLRepository.getTrending(trendingPeriod.toApi(), language = "Kotlin").fold(
+                onSuccess = { trending, _ ->
+                    trendingRepos.clear()
+                    trendingRepos.addAll(trending)
+                },
+                onError = { if (trendingRepos.isEmpty()) hasError = true },
+                onFailure = { if (trendingRepos.isEmpty()) hasError = true }
+            )
             isLoading = false
         }
     }
@@ -91,9 +103,10 @@ class ExploreViewModel(
     // PRIVATE
 
     private fun editRepo(id: String, block: (TrendingRepository) -> TrendingRepository) {
+        // The list may have been reloaded while a star request was in flight
         val targetIndex = trendingRepos.indexOfFirst { it.id == id }
-        val target = trendingRepos[targetIndex]
-        trendingRepos[targetIndex] = block(target)
+        if (targetIndex < 0) return
+        trendingRepos[targetIndex] = block(trendingRepos[targetIndex])
     }
 
     private fun TrendingPeriodPreference.toApi(): TrendingPeriod {

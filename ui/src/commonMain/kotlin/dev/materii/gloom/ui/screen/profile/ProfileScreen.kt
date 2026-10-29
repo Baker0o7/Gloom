@@ -41,6 +41,7 @@ import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.pluralStringResource
 import dev.icerock.moko.resources.compose.stringResource
 import dev.materii.gloom.Res
+import dev.materii.gloom.ui.component.ErrorMessage
 import dev.materii.gloom.api.dto.user.User
 import dev.materii.gloom.api.model.ModelRepo
 import dev.materii.gloom.api.model.ModelStatus
@@ -101,6 +102,14 @@ open class ProfileScreen(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
+                    if (viewModel.user == null && viewModel.hasError && !viewModel.isLoading) {
+                        ErrorMessage(
+                            message = stringResource(Res.strings.error_loading_content),
+                            modifier = Modifier.fillMaxWidth().padding(top = 64.dp),
+                            onRetryClick = { viewModel.loadData() }
+                        )
+                    }
+
                     viewModel.user?.let { user ->
                         Header(user = user)
 

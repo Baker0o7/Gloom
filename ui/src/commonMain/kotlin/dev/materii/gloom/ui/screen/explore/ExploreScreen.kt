@@ -1,6 +1,7 @@
 package dev.materii.gloom.ui.screen.explore
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,6 +23,7 @@ import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import dev.icerock.moko.resources.compose.stringResource
 import dev.materii.gloom.Res
+import dev.materii.gloom.ui.component.ErrorMessage
 import dev.materii.gloom.ui.screen.explore.component.TrendingFeedFooter
 import dev.materii.gloom.ui.screen.explore.component.TrendingFeedHeader
 import dev.materii.gloom.ui.screen.explore.component.TrendingRepoItem
@@ -73,6 +75,16 @@ class ExploreScreen: Tab {
                             currentTrendingPeriod = viewModel.trendingPeriod,
                             onTrendingPeriodChange = { newPeriod -> viewModel.updateTrendingPeriod(newPeriod) }
                         )
+                    }
+
+                    if (viewModel.hasError && viewModel.trendingRepos.isEmpty() && !viewModel.isLoading) {
+                        item("error") {
+                            ErrorMessage(
+                                message = stringResource(Res.strings.error_loading_content),
+                                modifier = Modifier.fillMaxWidth().padding(top = 48.dp),
+                                onRetryClick = { viewModel.loadTrending() }
+                            )
+                        }
                     }
 
                     items(

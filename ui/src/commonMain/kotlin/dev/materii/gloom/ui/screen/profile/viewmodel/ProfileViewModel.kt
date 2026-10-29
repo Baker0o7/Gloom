@@ -18,51 +18,37 @@ class ProfileViewModel(
 ): ScreenModel {
 
     var user: ModelUser? by mutableStateOf(null)
-    private var hasErrors by mutableStateOf(false)
+    var hasError by mutableStateOf(false)
+        private set
     var isLoading by mutableStateOf(false)
+
+    private var isTogglingFollow = false
 
     init {
         loadData()
     }
 
     fun loadData() {
-        if (username.isNotEmpty())
-            getUser()
-        else
-            getCurrentUser()
-    }
-
-    private fun getCurrentUser() {
+        if (isLoading) return
         isLoading = true
+        hasError = false
         screenModelScope.launch(Dispatchers.IO) {
-            gqlRepo.getCurrentProfile().fold(
-                onSuccess = {
-                    isLoading = false
-                    if (it.username == null) return@fold
-                    user = it
-                },
-                onError = {
-                    hasErrors = true
-                    isLoading = false
-                }
-            )
-        }
-    }
-
-    private fun getUser() {
-        isLoading = true
-        screenModelScope.launch(Dispatchers.IO) {
-            gqlRepo.getProfile(username).fold(
-                onSuccess = {
-                    isLoading = false
-                    if (it.username == null) return@fold
-                    user = it
-                },
-                onError = {
-                    hasErrors = true
-                    isLoading = false
-                }
-            )
+            try {
+                val response = if (username.isNotEmpty()) gqlRepo.getProfile(username)
+                               else gqlRepo.getCurrentProfile()
+                response.fold(
+                    onSuccess = { profile ->
+                        if (profile.username == null) {
+                            hasError = true
+                        } else {
+                            user = profile
+                        }
+                    },
+                    onError = { hasError = true }
+                )
+            } finally {
+                isLoading = false
+            }
         }
     }
 
@@ -70,16 +56,22 @@ class ProfileViewModel(
         val currentUser = user ?: return
         val userId = currentUser.id ?: return
         val isFollowing = currentUser.isFollowing
+        if (isTogglingFollow) return
+        isTogglingFollow = true
 
         screenModelScope.launch {
-            if (isFollowing == false)
-                gqlRepo.followUser(userId).ifSuccessful {
-                    user = currentUser.copy(isFollowing = it.first)
-                }
-            else
-                gqlRepo.unfollowUser(userId).ifSuccessful {
-                    user = currentUser.copy(isFollowing = it.first)
-                }
+            try {
+                if (isFollowing == false)
+                    gqlRepo.followUser(userId).ifSuccessful {
+                        user = currentUser.copy(isFollowing = it.first)
+                    }
+                else
+                    gqlRepo.unfollowUser(userId).ifSuccessful {
+                        user = currentUser.copy(isFollowing = it.first)
+                    }
+            } finally {
+                isTogglingFollow = false
+            }
         }
     }
 
