@@ -48,8 +48,9 @@ fun App(
 
     GloomTheme(
         darkTheme = isDark,
-        dynamicColor = prefs.monet && prefs.theme != Theme.AMOLED,
-        amoled = prefs.theme == Theme.AMOLED
+        dynamicColor = prefs.monet,
+        amoled = prefs.theme == Theme.AMOLED,
+        accent = prefs.accent
     ) {
         AlertHost { alertController ->
             Navigator(

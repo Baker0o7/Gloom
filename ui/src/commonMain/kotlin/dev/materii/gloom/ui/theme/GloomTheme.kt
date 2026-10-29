@@ -6,15 +6,22 @@ import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import dev.materii.gloom.domain.manager.enums.Accent
+import dev.materii.gloom.util.supportsMonet
 
 @Composable
 fun GloomTheme(
     darkTheme: Boolean,
     dynamicColor: Boolean,
     amoled: Boolean = false,
+    accent: Accent = Accent.DEFAULT,
     content: @Composable () -> Unit
 ) {
-    val (colors, gloomColors) = getColorSchemes(darkTheme, dynamicColor, amoled)
+    val (baseColors, gloomColors) = getColorSchemes(darkTheme, dynamicColor, amoled)
+    val useDynamic = dynamicColor && supportsMonet
+    val colors = if (accent != Accent.DEFAULT && !useDynamic)
+        accentColorScheme(accent, darkTheme, amoled)
+    else baseColors
 
     CompositionLocalProvider(
         LocalGloomColorScheme provides gloomColors

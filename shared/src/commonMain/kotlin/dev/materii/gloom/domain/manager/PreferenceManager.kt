@@ -5,6 +5,7 @@ import dev.materii.gloom.domain.manager.base.booleanPreference
 import dev.materii.gloom.domain.manager.base.enumPreference
 import dev.materii.gloom.domain.manager.base.intPreference
 import dev.materii.gloom.domain.manager.base.stringPreference
+import dev.materii.gloom.domain.manager.enums.Accent
 import dev.materii.gloom.domain.manager.enums.AppIcon
 import dev.materii.gloom.domain.manager.enums.AvatarShape
 import dev.materii.gloom.domain.manager.enums.DownloadHandlerPreference
@@ -15,7 +16,8 @@ import dev.materii.gloom.util.SettingsProvider
 class PreferenceManager(provider: SettingsProvider):
     BasePreferenceManager(provider) {
 
-    var theme by enumPreference("theme", Theme.DARK)
+    var theme by enumPreference("theme", Theme.SYSTEM)
+    var accent by enumPreference("accent", Accent.DEFAULT)
     var monet by booleanPreference("monet", dev.materii.gloom.util.supportsMonet)
 
     var userAvatarShape by enumPreference("user_avatar_shape", AvatarShape.Circle)

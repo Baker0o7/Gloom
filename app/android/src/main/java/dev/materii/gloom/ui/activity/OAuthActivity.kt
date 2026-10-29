@@ -39,8 +39,9 @@ class OAuthActivity: ComponentActivity() {
 
             GloomTheme(
                 darkTheme = isDark,
-                dynamicColor = prefs.monet && prefs.theme != Theme.AMOLED,
-                amoled = prefs.theme == Theme.AMOLED
+                dynamicColor = prefs.monet,
+                amoled = prefs.theme == Theme.AMOLED,
+                accent = prefs.accent
             ) {
                 CompositionLocalProvider(LocalLinkHandler provides linkHandler) {
                     LandingScreen().Content()

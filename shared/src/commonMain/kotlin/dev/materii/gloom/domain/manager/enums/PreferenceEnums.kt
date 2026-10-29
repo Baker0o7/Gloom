@@ -7,6 +7,15 @@ enum class Theme {
     AMOLED
 }
 
+enum class Accent {
+    DEFAULT,
+    BLUE,
+    GREEN,
+    TEAL,
+    ORANGE,
+    PINK
+}
+
 enum class AvatarShape {
     Circle,
     RoundedCorner,

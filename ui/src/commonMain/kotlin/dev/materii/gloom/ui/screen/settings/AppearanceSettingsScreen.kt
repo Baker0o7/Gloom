@@ -14,6 +14,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import dev.icerock.moko.resources.compose.stringResource
 import dev.materii.gloom.Res
+import dev.materii.gloom.domain.manager.enums.Accent
 import dev.materii.gloom.domain.manager.enums.Theme
 import dev.materii.gloom.ui.component.toolbar.LargeToolbar
 import dev.materii.gloom.ui.screen.settings.component.*
@@ -66,6 +67,25 @@ class AppearanceSettingsScreen: Screen {
                                 Theme.LIGHT  -> getString(Res.strings.theme_light)
                                 Theme.DARK   -> getString(Res.strings.theme_dark)
                                 Theme.AMOLED -> getString(Res.strings.theme_amoled)
+                            }
+                        }
+                    )
+                }
+
+                SettingsHeader(stringResource(Res.strings.appearance_accent))
+                SettingsGroup {
+                    SettingsItemChoice(
+                        label = stringResource(Res.strings.appearance_accent),
+                        pref = viewModel.prefs.accent,
+                        onPrefChange = { viewModel.prefs.accent = it },
+                        labelFactory = {
+                            when (it) {
+                                Accent.DEFAULT -> getString(Res.strings.accent_default)
+                                Accent.BLUE    -> getString(Res.strings.accent_blue)
+                                Accent.GREEN   -> getString(Res.strings.accent_green)
+                                Accent.TEAL    -> getString(Res.strings.accent_teal)
+                                Accent.ORANGE  -> getString(Res.strings.accent_orange)
+                                Accent.PINK    -> getString(Res.strings.accent_pink)
                             }
                         }
                     )
