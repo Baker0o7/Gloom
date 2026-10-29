@@ -18,6 +18,18 @@ class HomeViewModel(
     val starredRepos = mutableStateMapOf<String, Pair<Boolean, Int>>()
     val followedUsers = mutableStateMapOf<String, Pair<Boolean, Int>>()
 
+    // Ids with a request in flight, so rapid taps can't send duplicate star/follow requests
+    private val pending = mutableSetOf<String>()
+
+    private fun launchOnce(key: String, block: suspend () -> Unit) = screenModelScope.launch {
+        if (!pending.add(key)) return@launch
+        try {
+            block()
+        } finally {
+            pending.remove(key)
+        }
+    }
+
     fun refresh(pagingData: LazyPagingItems<FeedQuery.Node>) {
         starredRepos.clear()
         followedUsers.clear()
@@ -41,25 +53,25 @@ class HomeViewModel(
             ?: emptyList()
     }
 
-    fun starRepo(id: String) = screenModelScope.launch {
+    fun starRepo(id: String) = launchOnce("starredRepos:$id") {
         repo.starRepo(id).ifSuccessful {
             starredRepos[id] = it
         }
     }
 
-    fun unstarRepo(id: String) = screenModelScope.launch {
+    fun unstarRepo(id: String) = launchOnce("starredRepos:$id") {
         repo.unstarRepo(id).ifSuccessful {
             starredRepos[id] = it
         }
     }
 
-    fun followUser(id: String) = screenModelScope.launch {
+    fun followUser(id: String) = launchOnce("followedUsers:$id") {
         repo.followUser(id).ifSuccessful {
             followedUsers[id] = it
         }
     }
 
-    fun unfollowUser(id: String) = screenModelScope.launch {
+    fun unfollowUser(id: String) = launchOnce("followedUsers:$id") {
         repo.unfollowUser(id).ifSuccessful {
             followedUsers[id] = it
         }

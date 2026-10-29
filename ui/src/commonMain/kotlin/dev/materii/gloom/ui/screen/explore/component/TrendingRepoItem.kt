@@ -1,5 +1,6 @@
 package dev.materii.gloom.ui.screen.explore.component
 
+import dev.materii.gloom.ui.theme.LanguageFallback
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -142,7 +143,7 @@ fun TrendingRepoItem(
                     trendingRepository.primaryLanguage?.let { (color, name) ->
                         LabeledIcon(
                             icon = Icons.Filled.Circle,
-                            iconTint = color?.parsedColor ?: Color.Black,
+                            iconTint = color?.parsedColor ?: LanguageFallback,
                             label = name
                         )
                     }

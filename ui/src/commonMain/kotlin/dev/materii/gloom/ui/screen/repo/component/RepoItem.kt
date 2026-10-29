@@ -1,5 +1,6 @@
 package dev.materii.gloom.ui.screen.repo.component
 
+import dev.materii.gloom.ui.theme.LanguageFallback
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -129,7 +130,7 @@ fun RepoItem(
                 LabeledIcon(
                     icon = Icons.Filled.Circle,
                     label = name,
-                    iconTint = color?.parsedColor ?: Color.Black
+                    iconTint = color?.parsedColor ?: LanguageFallback
                 )
             }
         }

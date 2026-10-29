@@ -31,3 +31,6 @@ val AlertWarningLight = Color(0xFFA9A901)
 val AlertWarningDark = Color(0xFFEAEA00)
 val AlertCautionLight = Color(0xFFDC4646)
 val AlertCautionDark = Color(0xFFFF7777)
+
+// Neutral dot color for languages GitHub has no color for (visible on light and dark surfaces)
+val LanguageFallback = Color(0xFF8B949E)

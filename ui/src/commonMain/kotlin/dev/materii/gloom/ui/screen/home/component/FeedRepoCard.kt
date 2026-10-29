@@ -1,5 +1,6 @@
 package dev.materii.gloom.ui.screen.home.component
 
+import dev.materii.gloom.ui.theme.LanguageFallback
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Circle
@@ -94,7 +95,7 @@ fun FeedRepoCard(
                     LabeledIcon(
                         icon = Icons.Filled.Circle,
                         label = name,
-                        iconTint = color?.parsedColor ?: Color.Black
+                        iconTint = color?.parsedColor ?: LanguageFallback
                     )
                 }
             }

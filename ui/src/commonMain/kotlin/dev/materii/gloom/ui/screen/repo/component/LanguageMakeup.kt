@@ -1,5 +1,6 @@
 package dev.materii.gloom.ui.screen.repo.component
 
+import dev.materii.gloom.ui.theme.LanguageFallback
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -35,7 +36,7 @@ fun LanguageMakeup(
         _languages.add(
             LangWithPercent(
                 name = lang.node.name,
-                color = lang.node.color?.parsedColor ?: Color.Black,
+                color = lang.node.color?.parsedColor ?: LanguageFallback,
                 percent = lang.size.toFloat() / languages.totalSize.toFloat(),
                 size = lang.size
             )
