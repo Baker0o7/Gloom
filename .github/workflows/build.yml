@@ -35,7 +35,14 @@ jobs:
         env:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: ./gradlew :app:android:assembleDebug
+        run: |
+          set -o pipefail
+          ./gradlew :app:android:assembleDebug 2>&1 | tee build.log || {
+            # Surface compiler errors as annotations so they're visible without full logs
+            grep -E '^e: ' build.log | sed -E 's#file:///home/runner/work/[^/]+/[^/]+/##' | head -20 \
+              | while IFS= read -r line; do echo "::error::$line"; done
+            exit 1
+          }
 
       - name: Resolve release tag
         id: rel
