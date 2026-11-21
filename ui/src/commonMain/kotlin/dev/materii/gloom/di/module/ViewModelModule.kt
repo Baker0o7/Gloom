@@ -1,5 +1,7 @@
 package dev.materii.gloom.di.module
 
+import dev.materii.gloom.ui.screen.actions.viewmodel.ActionsViewModel
+import dev.materii.gloom.ui.screen.editor.viewmodel.CodeEditorViewModel
 import dev.materii.gloom.ui.screen.notifications.viewmodel.NotificationsViewModel
 import dev.materii.gloom.ui.screen.issue.viewmodel.CreateIssueViewModel
 import dev.materii.gloom.ui.screen.search.viewmodel.SearchViewModel
@@ -39,6 +41,8 @@ fun viewModelModule() = module {
     factoryOf(::AccountSettingsViewModel)
     factoryOf(::AppIconSettingsViewModel)
     factoryOf(::HomeViewModel)
+    factoryOf(::ActionsViewModel)
+    factoryOf(::CodeEditorViewModel)
     factoryOf(::ExploreViewModel)
     // Singleton so badge in navbar and inbox screen share the same unread count
     singleOf(::NotificationsViewModel)

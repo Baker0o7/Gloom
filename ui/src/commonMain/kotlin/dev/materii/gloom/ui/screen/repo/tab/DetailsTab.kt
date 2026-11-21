@@ -1,5 +1,7 @@
 package dev.materii.gloom.ui.screen.repo.tab
 
+import androidx.compose.material.icons.filled.PlayArrow
+import dev.materii.gloom.ui.screen.actions.ActionsScreen
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -164,6 +166,12 @@ class DetailsTab(
                                     NumberFormatter.compact(repoDetails.forkCount)
                                 ),
                                 onClick = { nav.navigate(ForksScreen(owner, name)) }
+                            )
+
+                            LargeSegmentedButton(
+                                icon = Icons.Filled.PlayArrow,
+                                text = "Actions",
+                                onClick = { nav.navigate(ActionsScreen(owner, name)) }
                             )
                         }
                     }

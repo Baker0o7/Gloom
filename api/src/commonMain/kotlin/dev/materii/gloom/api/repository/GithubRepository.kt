@@ -18,4 +18,25 @@ class GithubRepository(
 
     suspend fun createIssue(owner: String, repo: String, title: String, body: String) =
         service.createIssue(owner, repo, title, body)
+
+    suspend fun getWorkflowRuns(owner: String, repo: String) = service.getWorkflowRuns(owner, repo)
+    suspend fun getRunJobs(owner: String, repo: String, runId: Long) = service.getRunJobs(owner, repo, runId)
+    suspend fun cancelRun(owner: String, repo: String, runId: Long) = service.cancelRun(owner, repo, runId)
+    suspend fun rerunRun(owner: String, repo: String, runId: Long) = service.rerunRun(owner, repo, runId)
+    suspend fun rerunFailedJobs(owner: String, repo: String, runId: Long) = service.rerunFailedJobs(owner, repo, runId)
+    suspend fun getJobLogs(owner: String, repo: String, jobId: Long) = service.getJobLogs(owner, repo, jobId)
+
+    suspend fun getFileContent(owner: String, repo: String, path: String, ref: String) =
+        service.getFileContent(owner, repo, path, ref)
+
+    suspend fun updateFile(
+        owner: String, repo: String, path: String, message: String,
+        contentBase64: String, sha: String, branch: String,
+    ) = service.updateFile(owner, repo, path, message, contentBase64, sha, branch)
+
+    suspend fun getBranchRef(owner: String, repo: String, branch: String) =
+        service.getBranchRef(owner, repo, branch)
+
+    suspend fun createBranch(owner: String, repo: String, newBranch: String, fromSha: String) =
+        service.createBranch(owner, repo, newBranch, fromSha)
 }

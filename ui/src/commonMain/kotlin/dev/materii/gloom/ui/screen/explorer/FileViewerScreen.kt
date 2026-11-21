@@ -7,6 +7,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Description
@@ -23,6 +24,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.icerock.moko.resources.compose.stringResource
 import dev.materii.gloom.Res
 import dev.materii.gloom.domain.manager.ShareManager
@@ -30,6 +33,7 @@ import dev.materii.gloom.gql.fragment.RepoFile
 import dev.materii.gloom.ui.component.BackButton
 import dev.materii.gloom.ui.component.DownloadButton
 import dev.materii.gloom.ui.component.ErrorMessage
+import dev.materii.gloom.ui.screen.editor.CodeEditorScreen
 import dev.materii.gloom.ui.screen.explorer.viewmodel.FileViewerViewModel
 import dev.materii.gloom.ui.screen.explorer.viewers.ImageFileViewer
 import dev.materii.gloom.ui.screen.explorer.viewers.MarkdownFileViewer
@@ -172,6 +176,18 @@ class FileViewerScreen(
             if (url != null) {
                 DownloadButton(
                     downloadUrl = url
+                )
+            }
+        }
+
+        if (fileType == "TextFileType" || fileType == "MarkdownFileType") {
+            val nav = LocalNavigator.currentOrThrow
+            IconButton(
+                onClick = { nav.push(CodeEditorScreen(owner, name, branch, path)) }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Edit,
+                    contentDescription = "Edit file"
                 )
             }
         }
