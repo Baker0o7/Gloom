@@ -144,7 +144,11 @@ actual class DownloadManager(
                 setTitle("Gloom: Downloading ${out.name}")
                 setNotificationVisibility(AndroidDownloadManager.Request.VISIBILITY_VISIBLE)
                 setDestinationUri(out.toUri())
-                addRequestHeader("Authorization", authManager.authToken)
+                val host = url.toUri().host.orEmpty()
+                val isGithubHost = host == "github.com" || host.endsWith(".github.com") ||
+                    host.endsWith(".githubusercontent.com")
+                if (isGithubHost && authManager.authToken.isNotEmpty())
+                    addRequestHeader("Authorization", "Bearer ${authManager.authToken}")
                 downloadManager.enqueue(this)
             }
         }

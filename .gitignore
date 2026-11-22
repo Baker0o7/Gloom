@@ -77,3 +77,6 @@ lint/tmp/
 
 # GraphQL
 *.graphqlconfig
+
+# Shared debug signing key (public, debug-only) so CI-built APKs can update in place
+!app/android/debug.keystore

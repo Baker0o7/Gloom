@@ -30,7 +30,7 @@ fun serviceModule() = module {
     fun provideApolloClient(logger: Logger): ApolloClient {
         return ApolloClient.Builder()
             .serverUrl(URLs.GRAPHQL)
-            .addHttpInterceptor(LoggingInterceptor(LoggingInterceptor.Level.BODY) {
+            .addHttpInterceptor(LoggingInterceptor(LoggingInterceptor.Level.BASIC) {
                 logger.debug("GraphQL", it)
             })
             .normalizedCache(

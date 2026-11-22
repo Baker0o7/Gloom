@@ -22,28 +22,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: 17
-          distribution: 'temurin'
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Build debug APK
-        env:
-          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: |
-          set -o pipefail
-          ./gradlew :app:android:assembleDebug 2>&1 | tee build.log || {
-            # Surface compiler errors as annotations so they're visible without full logs
-            grep -E '^e: ' build.log | sed -E 's#file:///home/runner/work/[^/]+/[^/]+/##' | head -20 \
-              | while IFS= read -r line; do echo "::error::$line"; done
-            exit 1
-          }
-
       - name: Resolve release tag
         id: rel
         env:
@@ -56,6 +34,29 @@ jobs:
             TAG=$(printf '%s' "$COMMIT_MSG" | grep -oE '\[release v[0-9]+\.[0-9]+\.[0-9]+\]' | head -1 | sed -E 's/\[release (.*)\]/\1/' || true)
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build debug APK
+        env:
+          APP_VERSION: ${{ steps.rel.outputs.tag }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          set -o pipefail
+          ./gradlew :app:android:assembleDebug 2>&1 | tee build.log || {
+            # Surface compiler errors as annotations so they're visible without full logs
+            grep -E '^e: ' build.log | sed -E 's#file:///home/runner/work/[^/]+/[^/]+/##' | head -20 \
+              | while IFS= read -r line; do echo "::error::$line"; done
+            exit 1
+          }
 
       - name: Rename debug APK
         run: |
@@ -74,11 +75,13 @@ jobs:
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
           SIGNING_STORE_FILE: ${{ github.workspace }}/release.jks
+          APP_VERSION: ${{ steps.rel.outputs.tag }}
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > release.jks
           ./gradlew :app:android:packageRelease
           rm -f release.jks
-          VERSION="${GITHUB_REF_NAME:-release}"
+          VERSION="${{ steps.rel.outputs.tag }}"
+          VERSION="${VERSION:-${GITHUB_REF_NAME:-release}}"
           cp app/android/build/outputs/apk/release/gloom-release.apk \
              "app/android/build/outputs/apk/release/Gloom-${VERSION}-release.apk"
 
@@ -100,6 +103,14 @@ jobs:
           path: app/android/build/outputs/apk/release/Gloom-*-release.apk
           if-no-files-found: warn
 
+      - name: Generate checksums
+        if: steps.rel.outputs.tag != ''
+        run: |
+          cd app/android/build/outputs/apk
+          sha256sum debug/Gloom-*-debug.apk release/Gloom-*-release.apk 2>/dev/null \
+            | sed -E 's#  (debug|release)/#  #' > "$GITHUB_WORKSPACE/SHA256SUMS.txt"
+          cat "$GITHUB_WORKSPACE/SHA256SUMS.txt"
+
       - name: Create GitHub Release
         if: steps.rel.outputs.tag != ''
         uses: softprops/action-gh-release@v2
@@ -112,5 +123,6 @@ jobs:
           files: |
             app/android/build/outputs/apk/debug/Gloom-*-debug.apk
             app/android/build/outputs/apk/release/Gloom-*-release.apk
+            SHA256SUMS.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

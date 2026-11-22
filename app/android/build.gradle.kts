@@ -22,13 +22,24 @@ android {
         applicationId = "dev.materii.gloom"
         minSdk = 21
         targetSdk = 35
-        versionCode = 10084
-        versionName = "1.0.84"
+        // CI passes the release tag (e.g. v1.0.90) so the APK's version matches the release.
+        val ciVersion = System.getenv("APP_VERSION")?.removePrefix("v")?.takeIf { it.isNotBlank() }
+        val parts = ciVersion?.split(".")?.mapNotNull { it.toIntOrNull() }
+        versionCode = if (parts != null && parts.size == 3) parts[0] * 10000 + parts[1] * 100 + parts[2] else 10090
+        versionName = ciVersion ?: "1.0.90"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
+        // Shared debug key (public, debug-only) so every CI-built APK has the same signature
+        // and can be installed over the previous one instead of requiring an uninstall.
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
         create("release") {
             keyAlias = System.getenv("SIGNING_KEY_ALIAS")
             keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
