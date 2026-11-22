@@ -1,5 +1,11 @@
 package dev.materii.gloom.ui.screen.notifications
 
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
+import dev.materii.gloom.ui.screen.repo.RepoScreen
+import dev.materii.gloom.ui.util.NavigationUtil.navigate
+import dev.materii.gloom.util.TimeUtils
+import kotlinx.datetime.Instant
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
@@ -37,6 +43,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -144,6 +151,7 @@ private fun NotificationList(
     notifications: List<Notification>,
     onMarkRead: (String) -> Unit,
 ) {
+    val nav = LocalNavigator.currentOrThrow
     // Group by repository
     val grouped = notifications.groupBy { it.repository.fullName }
 
@@ -161,6 +169,11 @@ private fun NotificationList(
                 NotificationRow(
                     notification = notification,
                     onMarkRead   = { onMarkRead(notification.id) },
+                    onClick      = {
+                        // Opening a notification reads it, like on github.com
+                        if (notification.unread) onMarkRead(notification.id)
+                        nav.navigate(RepoScreen(notification.repository.owner.login, notification.repository.name))
+                    },
                 )
                 ThinDivider()
             }
@@ -215,7 +228,10 @@ private fun RepoHeader(repoFullName: String, avatarUrl: String, unreadCount: Int
 // ─── Single notification row ──────────────────────────────────────────────────
 
 @Composable
-private fun NotificationRow(notification: Notification, onMarkRead: () -> Unit) {
+private fun NotificationRow(notification: Notification, onMarkRead: () -> Unit, onClick: () -> Unit) {
+    val timeSince = remember(notification.updatedAt) {
+        runCatching { TimeUtils.getTimeSince(Instant.parse(notification.updatedAt)) }.getOrNull()
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -223,7 +239,7 @@ private fun NotificationRow(notification: Notification, onMarkRead: () -> Unit) 
                 if (notification.unread) MaterialTheme.colorScheme.surfaceContainerLow
                 else MaterialTheme.colorScheme.surface
             )
-            .clickable(enabled = notification.unread) { onMarkRead() }
+            .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment     = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -261,7 +277,7 @@ private fun NotificationRow(notification: Notification, onMarkRead: () -> Unit) 
             ) {
                 ReasonChip(notification.reason)
                 Text(
-                    text  = notification.subject.type,
+                    text  = if (timeSince != null) "${notification.subject.type} · $timeSince" else notification.subject.type,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

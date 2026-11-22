@@ -1,5 +1,7 @@
 package dev.materii.gloom.ui.screen.actions
 
+import dev.materii.gloom.util.TimeUtils
+import kotlinx.datetime.Instant
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -178,9 +180,12 @@ private fun RunItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                run.createdAt?.let {
+                run.createdAt?.let { created ->
+                    val relative = remember(created) {
+                        runCatching { TimeUtils.getTimeSince(Instant.parse(created)) }.getOrNull()
+                    }
                     Text(
-                        it.take(16).replace('T', ' ') + " UTC",
+                        relative ?: (created.take(16).replace('T', ' ') + " UTC"),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
