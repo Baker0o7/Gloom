@@ -3,6 +3,11 @@ package dev.materii.gloom.api.service
 import dev.materii.gloom.api.dto.actions.WorkflowJobsResponse
 import dev.materii.gloom.api.dto.actions.WorkflowRunsResponse
 import dev.materii.gloom.api.dto.content.ContentFile
+import dev.materii.gloom.api.dto.dev.CommitActivityWeek
+import dev.materii.gloom.api.dto.dev.CommitItem
+import dev.materii.gloom.api.dto.dev.UserSearchResponse
+import dev.materii.gloom.api.dto.gist.Gist
+import kotlinx.serialization.json.JsonObject
 import dev.materii.gloom.api.dto.content.GitRef
 import dev.materii.gloom.api.dto.notification.Notification
 import dev.materii.gloom.api.util.ApiResponse
@@ -17,6 +22,7 @@ import io.ktor.http.encodeURLParameter
 import io.ktor.http.encodeURLPathPart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -203,6 +209,105 @@ class GithubApiService(
             method = HttpMethod.Post
             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
             setBody(CreateRefBody("refs/heads/$newBranch", fromSha))
+        }
+    }
+
+    // ── Gists ─────────────────────────────────────────────────────────────────
+
+    @Serializable
+    private data class CreateGistBody(
+        val description: String,
+        @SerialName("public") val isPublic: Boolean,
+        val files: Map<String, GistFileBody>,
+    )
+
+    @Serializable
+    private data class GistFileBody(val content: String)
+
+    suspend fun getGists(perPage: Int = 50): ApiResponse<List<Gist>> = withContext(Dispatchers.IO) {
+        client.request {
+            url("$base/gists?per_page=$perPage")
+            header(HttpHeaders.Authorization, auth())
+            method = HttpMethod.Get
+        }
+    }
+
+    suspend fun getGist(id: String): ApiResponse<Gist> = withContext(Dispatchers.IO) {
+        client.request {
+            url("$base/gists/$id")
+            header(HttpHeaders.Authorization, auth())
+            method = HttpMethod.Get
+        }
+    }
+
+    suspend fun createGist(
+        description: String,
+        isPublic: Boolean,
+        fileName: String,
+        content: String,
+    ): ApiResponse<Gist> = withContext(Dispatchers.IO) {
+        client.request {
+            url("$base/gists")
+            header(HttpHeaders.Authorization, auth())
+            method = HttpMethod.Post
+            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            setBody(CreateGistBody(description, isPublic, mapOf(fileName to GistFileBody(content))))
+        }
+    }
+
+    suspend fun deleteGist(id: String): ApiResponse<String> = withContext(Dispatchers.IO) {
+        client.request {
+            url("$base/gists/$id")
+            header(HttpHeaders.Authorization, auth())
+            method = HttpMethod.Delete
+        }
+    }
+
+    // ── Developers / commit history ──────────────────────────────────────────
+
+    suspend fun searchUsers(query: String, perPage: Int = 30): ApiResponse<UserSearchResponse> =
+        withContext(Dispatchers.IO) {
+            client.request {
+                url("$base/search/users?q=${query.encodeURLParameter()}&sort=followers&order=desc&per_page=$perPage")
+                header(HttpHeaders.Authorization, auth())
+                method = HttpMethod.Get
+            }
+        }
+
+    suspend fun getCommits(owner: String, repo: String, perPage: Int = 60): ApiResponse<List<CommitItem>> =
+        withContext(Dispatchers.IO) {
+            client.request {
+                url("$base/repos/$owner/$repo/commits?per_page=$perPage")
+                header(HttpHeaders.Authorization, auth())
+                method = HttpMethod.Get
+            }
+        }
+
+    /** 52 weeks of commit counts. GitHub answers 202 (empty) while it computes the stats. */
+    suspend fun getCommitActivity(owner: String, repo: String): ApiResponse<List<CommitActivityWeek>> =
+        withContext(Dispatchers.IO) {
+            client.request {
+                url("$base/repos/$owner/$repo/stats/commit_activity")
+                header(HttpHeaders.Authorization, auth())
+                method = HttpMethod.Get
+            }
+        }
+
+    // ── Raw GraphQL (Discussions, Projects) ──────────────────────────────────
+
+    @Serializable
+    private data class GraphQLBody(val query: String, val variables: JsonObject)
+
+    suspend fun graphql(
+        query: String,
+        variables: JsonObject = JsonObject(emptyMap()),
+    ): ApiResponse<JsonObject> = withContext(Dispatchers.IO) {
+        client.request {
+            url("$base/graphql")
+            header(HttpHeaders.Authorization, auth())
+            method = HttpMethod.Post
+            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            setBody(GraphQLBody(query, variables))
         }
     }
 }

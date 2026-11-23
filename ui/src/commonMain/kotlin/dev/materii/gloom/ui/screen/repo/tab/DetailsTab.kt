@@ -1,5 +1,11 @@
 package dev.materii.gloom.ui.screen.repo.tab
 
+import androidx.compose.material.icons.outlined.Dashboard
+import androidx.compose.material.icons.outlined.Forum
+import androidx.compose.material.icons.outlined.Timeline
+import dev.materii.gloom.ui.screen.activity.CommitActivityScreen
+import dev.materii.gloom.ui.screen.discussions.DiscussionsScreen
+import dev.materii.gloom.ui.screen.projects.ProjectsScreen
 import androidx.compose.material.icons.filled.PlayArrow
 import dev.materii.gloom.ui.screen.actions.ActionsScreen
 import androidx.compose.foundation.clickable
@@ -172,6 +178,32 @@ class DetailsTab(
                                 icon = Icons.Filled.PlayArrow,
                                 text = "Actions",
                                 onClick = { nav.navigate(ActionsScreen(owner, name)) }
+                            )
+                        }
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                            .fillMaxWidth()
+                    ) {
+                        LargeSegmentedButtonRow {
+                            LargeSegmentedButton(
+                                icon = Icons.Outlined.Forum,
+                                text = "Discussions",
+                                onClick = { nav.navigate(DiscussionsScreen(owner, name)) }
+                            )
+
+                            LargeSegmentedButton(
+                                icon = Icons.Outlined.Dashboard,
+                                text = "Projects",
+                                onClick = { nav.navigate(ProjectsScreen(owner, name)) }
+                            )
+
+                            LargeSegmentedButton(
+                                icon = Icons.Outlined.Timeline,
+                                text = "Activity",
+                                onClick = { nav.navigate(CommitActivityScreen(owner, name)) }
                             )
                         }
                     }

@@ -39,4 +39,15 @@ class GithubRepository(
 
     suspend fun createBranch(owner: String, repo: String, newBranch: String, fromSha: String) =
         service.createBranch(owner, repo, newBranch, fromSha)
+
+    suspend fun getGists() = service.getGists()
+    suspend fun getGist(id: String) = service.getGist(id)
+    suspend fun createGist(description: String, isPublic: Boolean, fileName: String, content: String) =
+        service.createGist(description, isPublic, fileName, content)
+    suspend fun deleteGist(id: String) = service.deleteGist(id)
+    suspend fun searchUsers(query: String) = service.searchUsers(query)
+    suspend fun getCommits(owner: String, repo: String) = service.getCommits(owner, repo)
+    suspend fun getCommitActivity(owner: String, repo: String) = service.getCommitActivity(owner, repo)
+    suspend fun graphql(query: String, variables: kotlinx.serialization.json.JsonObject = kotlinx.serialization.json.JsonObject(emptyMap())) =
+        service.graphql(query, variables)
 }

@@ -1,5 +1,9 @@
 package dev.materii.gloom.ui.screen.explore
 
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.Group
+import dev.materii.gloom.ui.screen.dev.DevelopersScreen
+import dev.materii.gloom.ui.screen.gists.GistsScreen
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -122,6 +126,18 @@ class ExploreScreen: Tab {
         LargeTopAppBar(
             title = { Text(text = options.title) },
             actions = {
+                IconButton(onClick = { nav.push(DevelopersScreen()) }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Group,
+                        contentDescription = "Explore developers"
+                    )
+                }
+                IconButton(onClick = { nav.push(GistsScreen()) }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Description,
+                        contentDescription = "Gists"
+                    )
+                }
                 IconButton(
                     onClick = { nav.push(SearchScreen()) }
                 ) {
