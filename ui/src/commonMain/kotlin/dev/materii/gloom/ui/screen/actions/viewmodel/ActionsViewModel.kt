@@ -14,6 +14,9 @@ import dev.materii.gloom.api.util.ApiResponse
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Instant
+
+private const val MAX_LOG_LINES = 500
 
 class ActionsViewModel(
     private val githubRepo: GithubRepository,
@@ -25,7 +28,40 @@ class ActionsViewModel(
     /** [text] == null && !failed means the log is still loading. */
     data class LogState(val title: String, val text: String? = null, val failed: Boolean = false)
 
+    enum class RunFilter(val label: String) { ALL("All"), FAILED("Failed"), SUCCESS("Passed"), RUNNING("Running") }
+
+    /** Pass rate and typical duration over the loaded history. */
+    data class Summary(val total: Int, val passRatePercent: Int, val averageSeconds: Long?)
+
     val runs = mutableStateListOf<WorkflowRun>()
+
+    var filter by mutableStateOf(RunFilter.ALL)
+        private set
+
+    val visibleRuns: List<WorkflowRun>
+        get() = when (filter) {
+            RunFilter.ALL -> runs.toList()
+            RunFilter.FAILED -> runs.filter { it.conclusion == "failure" || it.conclusion == "timed_out" }
+            RunFilter.SUCCESS -> runs.filter { it.conclusion == "success" }
+            RunFilter.RUNNING -> runs.filter { it.isActive }
+        }
+
+    val summary: Summary?
+        get() {
+            val finished = runs.filter { !it.isActive && it.conclusion != null && it.conclusion != "cancelled" && it.conclusion != "skipped" }
+            if (finished.isEmpty()) return null
+            val passed = finished.count { it.conclusion == "success" }
+            val durations = finished.mapNotNull { runSeconds(it) }
+            return Summary(
+                total = finished.size,
+                passRatePercent = passed * 100 / finished.size,
+                averageSeconds = if (durations.isEmpty()) null else durations.sum() / durations.size
+            )
+        }
+
+    fun setFilter(newFilter: RunFilter) {
+        filter = newFilter
+    }
     val jobs = mutableStateMapOf<Long, List<WorkflowJob>>()
 
     var isLoading by mutableStateOf(false)
@@ -77,6 +113,24 @@ class ActionsViewModel(
                 delay(15_000)
                 if (runs.any { it.isActive }) load(silent = true)
             }
+        }
+    }
+
+    companion object {
+        /** Wall-clock seconds from creation to last update, for finished runs. */
+        fun runSeconds(run: WorkflowRun): Long? {
+            if (run.isActive) return null
+            val start = run.createdAt ?: return null
+            val end = run.updatedAt ?: return null
+            return runCatching {
+                (Instant.parse(end) - Instant.parse(start)).inWholeSeconds
+            }.getOrNull()?.takeIf { it >= 0 }
+        }
+
+        fun formatDuration(seconds: Long): String = when {
+            seconds < 60 -> "${seconds}s"
+            seconds < 3600 -> "${seconds / 60}m ${seconds % 60}s"
+            else -> "${seconds / 3600}h ${(seconds % 3600) / 60}m"
         }
     }
 
@@ -144,7 +198,4 @@ class ActionsViewModel(
         else lines.joinToString("\n")
     }
 
-    private companion object {
-        const val MAX_LOG_LINES = 500
-    }
 }

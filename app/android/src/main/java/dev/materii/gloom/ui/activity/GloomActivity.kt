@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.luminance
@@ -19,6 +20,7 @@ import dev.materii.gloom.ui.App
 import dev.materii.gloom.ui.screen.root.RootScreen
 import dev.materii.gloom.ui.util.toPx
 import dev.materii.gloom.util.LinkHandler
+import dev.materii.gloom.util.alerts.NotificationPermission
 import dev.materii.gloom.util.deeplink.DeepLinkHandler
 import kotlinx.collections.immutable.toImmutableList
 import org.koin.android.ext.android.inject
@@ -27,10 +29,19 @@ open class GloomActivity: ComponentActivity() {
 
     protected val auth: AuthManager by inject()
 
+    private val notificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* alerts just stay silent if denied */ }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
 
         super.onCreate(savedInstanceState)
+
+        NotificationPermission.request = {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
 
         if (!auth.isSignedIn) {
             val activityIntent = Intent(

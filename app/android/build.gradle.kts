@@ -95,6 +95,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.glance.appwidget)
+    implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.glance.material3)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.koin.android)

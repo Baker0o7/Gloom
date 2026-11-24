@@ -16,7 +16,9 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -37,6 +39,8 @@ import dev.materii.gloom.api.dto.actions.WorkflowRun
 import dev.materii.gloom.ui.component.BackButton
 import dev.materii.gloom.ui.component.ErrorMessage
 import dev.materii.gloom.ui.screen.actions.viewmodel.ActionsViewModel
+import dev.materii.gloom.domain.manager.BuildAlerts
+import org.koin.compose.getKoin
 import org.koin.core.parameter.parametersOf
 
 private val SuccessGreen = Color(0xFF3FB950)
@@ -53,6 +57,9 @@ class ActionsScreen(
     override fun Content() {
         val viewModel = koinScreenModel<ActionsViewModel> { parametersOf(ActionsViewModel.Input(owner, name)) }
         val snackbar = remember { SnackbarHostState() }
+        // Only available on platforms that register an implementation (Android).
+        val alerts = remember { getKoin().getOrNull<BuildAlerts>() }
+        var watching by remember { mutableStateOf(alerts?.isWatching(owner, name) ?: false) }
 
         LaunchedEffect(viewModel.message) {
             viewModel.message?.let {
@@ -78,6 +85,21 @@ class ActionsScreen(
                     },
                     navigationIcon = { BackButton() },
                     actions = {
+                        if (alerts != null) {
+                            IconButton(onClick = {
+                                watching = !watching
+                                alerts.setWatching(owner, name, watching)
+                                if (watching) alerts.requestPermissionIfNeeded()
+                                viewModel.message =
+                                    if (watching) "You'll be notified when a build fails here (checked about every 15 minutes)"
+                                    else "Build failure alerts turned off"
+                            }) {
+                                Icon(
+                                    if (watching) Icons.Filled.Notifications else Icons.Outlined.NotificationsNone,
+                                    contentDescription = if (watching) "Turn off build failure alerts" else "Alert me when builds fail"
+                                )
+                            }
+                        }
                         IconButton(onClick = { viewModel.load() }) {
                             Icon(Icons.Filled.Refresh, contentDescription = "Refresh")
                         }
@@ -94,6 +116,26 @@ class ActionsScreen(
                     .fillMaxSize()
             ) {
                 LazyColumn(Modifier.fillMaxSize()) {
+                    if (viewModel.runs.isNotEmpty()) {
+                        item("history") {
+                            HistoryHeader(
+                                filter = viewModel.filter,
+                                summary = viewModel.summary,
+                                onFilterChange = viewModel::setFilter
+                            )
+                        }
+                        if (viewModel.visibleRuns.isEmpty()) {
+                            item("no_matches") {
+                                Text(
+                                    "No ${viewModel.filter.label.lowercase()} runs in the recent history",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(24.dp)
+                                )
+                            }
+                        }
+                    }
+
                     if (viewModel.runs.isEmpty() && !viewModel.isLoading) {
                         item("empty") {
                             if (viewModel.hasError) {
@@ -118,7 +160,7 @@ class ActionsScreen(
                         }
                     }
 
-                    items(viewModel.runs, key = { it.id }) { run ->
+                    items(viewModel.visibleRuns, key = { it.id }) { run ->
                         RunItem(
                             run = run,
                             expanded = viewModel.expandedRunId == run.id,
@@ -167,8 +209,10 @@ private fun RunItem(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
+                val duration = ActionsViewModel.runSeconds(run)?.let { ActionsViewModel.formatDuration(it) }
                 val details = buildList {
                     add("#${run.runNumber}")
+                    duration?.let { add(it) }
                     run.name?.let { add(it) }
                     run.headBranch?.let { add(it) }
                     run.event?.let { add(it) }
@@ -331,4 +375,34 @@ private fun LogDialog(state: ActionsViewModel.LogState, onDismiss: () -> Unit) {
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } }
     )
+}
+
+@Composable
+private fun HistoryHeader(
+    filter: ActionsViewModel.RunFilter,
+    summary: ActionsViewModel.Summary?,
+    onFilterChange: (ActionsViewModel.RunFilter) -> Unit,
+) {
+    Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (summary != null) {
+            val average = summary.averageSeconds?.let { " · avg ${ActionsViewModel.formatDuration(it)}" }.orEmpty()
+            Text(
+                "${summary.passRatePercent}% passed over the last ${summary.total} runs$average",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Row(
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            ActionsViewModel.RunFilter.entries.forEach { option ->
+                FilterChip(
+                    selected = filter == option,
+                    onClick = { onFilterChange(option) },
+                    label = { Text(option.label) }
+                )
+            }
+        }
+    }
 }
