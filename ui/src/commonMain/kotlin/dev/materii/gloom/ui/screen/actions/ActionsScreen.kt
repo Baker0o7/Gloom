@@ -58,7 +58,8 @@ class ActionsScreen(
         val viewModel = koinScreenModel<ActionsViewModel> { parametersOf(ActionsViewModel.Input(owner, name)) }
         val snackbar = remember { SnackbarHostState() }
         // Only available on platforms that register an implementation (Android).
-        val alerts = remember { getKoin().getOrNull<BuildAlerts>() }
+        val koin = getKoin()
+        val alerts = remember(koin) { koin.getOrNull<BuildAlerts>() }
         var watching by remember { mutableStateOf(alerts?.isWatching(owner, name) ?: false) }
 
         LaunchedEffect(viewModel.message) {
