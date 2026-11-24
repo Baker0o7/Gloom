@@ -59,7 +59,7 @@ class ActionsViewModel(
             )
         }
 
-    fun setFilter(newFilter: RunFilter) {
+    fun selectFilter(newFilter: RunFilter) {
         filter = newFilter
     }
     val jobs = mutableStateMapOf<Long, List<WorkflowJob>>()

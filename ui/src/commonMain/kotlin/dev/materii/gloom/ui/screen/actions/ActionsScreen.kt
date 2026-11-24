@@ -122,7 +122,7 @@ class ActionsScreen(
                             HistoryHeader(
                                 filter = viewModel.filter,
                                 summary = viewModel.summary,
-                                onFilterChange = viewModel::setFilter
+                                onFilterChange = viewModel::selectFilter
                             )
                         }
                         if (viewModel.visibleRuns.isEmpty()) {
