@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.outlined.DynamicFeed
 import androidx.compose.material3.FilterChip
@@ -152,7 +153,7 @@ class HomeScreen : Tab {
                         contentPadding        = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        items(HomeViewModel.Filter.entries.toList()) { f ->
+                        itemsIndexed(HomeViewModel.Filter.entries.toList()) { _, f ->
                             FilterChip(
                                 selected = filter == f,
                                 onClick  = {
