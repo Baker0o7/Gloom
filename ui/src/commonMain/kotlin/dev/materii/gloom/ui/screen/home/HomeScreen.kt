@@ -1,9 +1,27 @@
 package dev.materii.gloom.ui.screen.home
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.outlined.DynamicFeed
+import androidx.compose.material3.FilterChip
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import dev.materii.gloom.ui.screen.home.viewmodel.matches
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -90,6 +108,24 @@ class HomeScreen : Tab {
         val hasError     = items.loadState.refresh is LoadState.Error
         val isEmpty      = !isRefreshing && items.itemCount == 0 && !hasError
         val canScrollUp  by remember { derivedStateOf { listState.canScrollBackward } }
+        val filter       = viewModel.filter
+
+        // Indices (into the paged list) that match the active filter. peek() doesn't trigger loads.
+        val visible: List<Int> = if (filter == HomeViewModel.Filter.ALL) {
+            List(items.itemCount) { it }
+        } else {
+            (0 until items.itemCount).filter { i -> items.peek(i)?.matches(filter) ?: false }
+        }
+
+        // A filter can hide most of what's loaded; keep fetching pages until there is something to show.
+        LaunchedEffect(filter, items.itemCount, visible.size) {
+            val append = items.loadState.append
+            if (filter != HomeViewModel.Filter.ALL && visible.size < 6 && items.itemCount > 0 &&
+                append is LoadState.NotLoading && !append.endOfPaginationReached
+            ) {
+                items[items.itemCount - 1]
+            }
+        }
 
         Scaffold(
             topBar = {
@@ -110,41 +146,76 @@ class HomeScreen : Tab {
             },
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         ) { pv ->
-            PullToRefreshBox(
-                isRefreshing = isRefreshing,
-                onRefresh    = { viewModel.refresh(items) },
-                modifier     = Modifier.fillMaxSize().padding(pv),
-            ) {
-                when {
-                    // Full-page error state
-                    hasError && items.itemCount == 0 -> FeedErrorState(
-                        onRetry = { items.retry() }
-                    )
-                    // Empty feed
-                    isEmpty -> FeedEmptyState()
-                    // Normal list
-                    else -> LazyColumn(
-                        state    = listState,
-                        modifier = Modifier.fillMaxWidth(),
+            Column(Modifier.fillMaxSize().padding(pv)) {
+                if (!hasError && !(isEmpty && filter == HomeViewModel.Filter.ALL)) {
+                    LazyRow(
+                        contentPadding        = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        items(
-                            count       = items.itemCount,
-                            key         = items.itemKey(),
-                            contentType = items.itemContentType(),
-                        ) { index ->
-                            items[index]?.let { FeedItem(it, viewModel) }
-                            if (index < items.itemCount - 1) ThinDivider()
+                        items(HomeViewModel.Filter.entries.toList()) { f ->
+                            FilterChip(
+                                selected = filter == f,
+                                onClick  = {
+                                    viewModel.selectFilter(f)
+                                    scope.launch { listState.scrollToItem(0) }
+                                },
+                                label = { Text(f.label) },
+                            )
                         }
+                    }
+                }
 
-                        // Append error footer
-                        if (items.loadState.append is LoadState.Error) {
-                            item {
-                                Box(
-                                    Modifier.fillMaxWidth().padding(16.dp),
-                                    Alignment.Center
-                                ) {
-                                    OutlinedButton(onClick = { items.retry() }) {
-                                        Text(stringResource(Res.strings.home_load_more_failed))
+                PullToRefreshBox(
+                    isRefreshing = isRefreshing && items.itemCount > 0,
+                    onRefresh    = { viewModel.refresh(items) },
+                    modifier     = Modifier.fillMaxSize(),
+                ) {
+                    when {
+                        // First load: skeleton instead of a blank screen
+                        isRefreshing && items.itemCount == 0 -> FeedSkeleton()
+                        // Full-page error state
+                        hasError && items.itemCount == 0 -> FeedErrorState(
+                            onRetry = { items.retry() }
+                        )
+                        // Empty feed
+                        isEmpty -> FeedEmptyState(onRefresh = { viewModel.refresh(items) })
+                        // Filter hides everything loaded so far
+                        visible.isEmpty() -> FilteredEmptyState(
+                            filter  = filter,
+                            loading = items.loadState.append is LoadState.Loading,
+                            onShowAll = { viewModel.selectFilter(HomeViewModel.Filter.ALL) },
+                        )
+                        // Normal list
+                        else -> LazyColumn(
+                            state    = listState,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            items(
+                                count = visible.size,
+                                key   = { visible[it] },
+                            ) { pos ->
+                                items[visible[pos]]?.let { FeedItem(it, viewModel) }
+                                if (pos < visible.size - 1) ThinDivider()
+                            }
+
+                            if (items.loadState.append is LoadState.Loading) {
+                                item {
+                                    Box(Modifier.fillMaxWidth().padding(16.dp), Alignment.Center) {
+                                        androidx.compose.material3.CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
+                                    }
+                                }
+                            }
+
+                            // Append error footer
+                            if (items.loadState.append is LoadState.Error) {
+                                item {
+                                    Box(
+                                        Modifier.fillMaxWidth().padding(16.dp),
+                                        Alignment.Center
+                                    ) {
+                                        OutlinedButton(onClick = { items.retry() }) {
+                                            Text(stringResource(Res.strings.home_load_more_failed))
+                                        }
                                     }
                                 }
                             }
@@ -220,15 +291,70 @@ private fun FeedItem(feedItem: FeedQuery.Node, viewModel: HomeViewModel) {
 // ─── Empty / error states ─────────────────────────────────────────────────────
 
 @Composable
-private fun FeedEmptyState() {
+private fun FeedEmptyState(onRefresh: () -> Unit) {
     Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), Alignment.Center) {
-        Text(
-            stringResource(Res.strings.home_empty),
-            style     = MaterialTheme.typography.bodyMedium,
-            color     = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier  = Modifier.padding(32.dp),
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(32.dp),
+        ) {
+            Icon(
+                Icons.Outlined.DynamicFeed,
+                contentDescription = null,
+                tint     = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(48.dp),
+            )
+            Text(
+                stringResource(Res.strings.home_empty),
+                style     = MaterialTheme.typography.bodyMedium,
+                color     = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+            OutlinedButton(onClick = onRefresh) { Text("Refresh") }
+        }
+    }
+}
+
+@Composable
+private fun FilteredEmptyState(filter: HomeViewModel.Filter, loading: Boolean, onShowAll: () -> Unit) {
+    Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), Alignment.Center) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(32.dp),
+        ) {
+            Text(
+                if (loading) "Looking for ${filter.label.lowercase()}…" else "No ${filter.label.lowercase()} in your feed yet",
+                style     = MaterialTheme.typography.bodyMedium,
+                color     = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+            if (!loading) OutlinedButton(onClick = onShowAll) { Text("Show everything") }
+        }
+    }
+}
+
+/** Pulsing placeholder rows shown during the first load. */
+@Composable
+private fun FeedSkeleton() {
+    val pulse by rememberInfiniteTransition(label = "skeleton").animateFloat(
+        initialValue  = 0.35f,
+        targetValue   = 0.8f,
+        animationSpec = infiniteRepeatable(tween(800), RepeatMode.Reverse),
+        label         = "alpha",
+    )
+    val color = MaterialTheme.colorScheme.surfaceVariant
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState(), enabled = false).alpha(pulse)) {
+        repeat(6) {
+            Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(32.dp).clip(RoundedCornerShape(50)).background(color))
+                    Box(Modifier.width(180.dp).height(12.dp).clip(RoundedCornerShape(6.dp)).background(color))
+                }
+                Box(Modifier.fillMaxWidth().height(72.dp).clip(RoundedCornerShape(12.dp)).background(color))
+            }
+            ThinDivider()
+        }
     }
 }
 

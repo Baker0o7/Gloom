@@ -1,6 +1,9 @@
 package dev.materii.gloom.ui.screen.home.viewmodel
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import app.cash.paging.compose.LazyPagingItems
 import cafe.adriel.voyager.core.model.screenModelScope
 import dev.materii.gloom.api.repository.GraphQLRepository
@@ -14,6 +17,18 @@ import kotlinx.coroutines.launch
 class HomeViewModel(
     private val repo: GraphQLRepository
 ): BaseListViewModel<FeedQuery.Node, FeedQuery.Data?>() {
+
+    /** Client-side feed filter; applies to what's already loaded and keeps paging in the background. */
+    enum class Filter(val label: String) {
+        ALL("All"), REPOS("Repos"), STARS("Stars"), RELEASES("Releases"), PULLS("Pull requests"), PEOPLE("People")
+    }
+
+    var filter by mutableStateOf(Filter.ALL)
+        private set
+
+    fun selectFilter(newFilter: Filter) {
+        filter = newFilter
+    }
 
     val starredRepos = mutableStateMapOf<String, Pair<Boolean, Int>>()
     val followedUsers = mutableStateMapOf<String, Pair<Boolean, Int>>()
@@ -100,4 +115,13 @@ private fun FeedQuery.Node.isSupportedHomeItem(): Boolean = when {
     mergedPullRequestFeedItemFragment != null ->
         mergedPullRequestFeedItemFragment?.pullRequest?.baseRepository != null
     else -> false
+}
+
+fun FeedQuery.Node.matches(filter: HomeViewModel.Filter): Boolean = when (filter) {
+    HomeViewModel.Filter.ALL -> true
+    HomeViewModel.Filter.REPOS -> createdRepoItemFragment != null || forkedRepositoryFeedItemFragment != null
+    HomeViewModel.Filter.STARS -> starredFeedItemFragment != null
+    HomeViewModel.Filter.RELEASES -> newReleaseItemFragment != null
+    HomeViewModel.Filter.PULLS -> mergedPullRequestFeedItemFragment != null
+    HomeViewModel.Filter.PEOPLE -> followedUserFeedItemFragment != null
 }
