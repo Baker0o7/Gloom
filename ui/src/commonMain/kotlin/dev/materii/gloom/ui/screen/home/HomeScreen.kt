@@ -193,13 +193,20 @@ class HomeScreen : Tab {
                         else -> LazyColumn(
                             state    = listState,
                             modifier = Modifier.fillMaxWidth(),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
                         ) {
                             items(
                                 count = visible.size,
                                 key   = { visible[it] },
                             ) { pos ->
-                                items[visible[pos]]?.let { FeedItem(it, viewModel) }
-                                if (pos < visible.size - 1) ThinDivider()
+                                items[visible[pos]]?.let { feedItem ->
+                                    androidx.compose.material3.Surface(
+                                        shape = MaterialTheme.shapes.large,
+                                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                                        modifier = Modifier.fillMaxWidth(),
+                                    ) { FeedItem(feedItem, viewModel) }
+                                }
                             }
 
                             if (items.loadState.append is LoadState.Loading) {

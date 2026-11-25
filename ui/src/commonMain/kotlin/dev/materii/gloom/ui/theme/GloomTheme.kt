@@ -1,11 +1,14 @@
 package dev.materii.gloom.ui.theme
 
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import dev.materii.gloom.domain.manager.enums.Accent
 import dev.materii.gloom.util.supportsMonet
 
@@ -28,8 +31,8 @@ fun GloomTheme(
     ) {
         MaterialTheme(
             colorScheme = colors,
-            typography = Typography(),
-            shapes = Shapes(),
+            typography = gloomTypography(),
+            shapes = gloomShapes,
             content = content
         )
     }
@@ -44,3 +47,25 @@ fun GloomTheme(
  */
 @Composable
 expect fun getColorSchemes(darkTheme: Boolean, dynamicColor: Boolean, amoled: Boolean): Pair<ColorScheme, GloomColorScheme>
+
+/** Softer, rounder corners than the Material defaults: cards, dialogs, sheets and chips all follow. */
+private val gloomShapes = Shapes(
+    extraSmall = RoundedCornerShape(8.dp),
+    small = RoundedCornerShape(12.dp),
+    medium = RoundedCornerShape(16.dp),
+    large = RoundedCornerShape(22.dp),
+    extraLarge = RoundedCornerShape(30.dp),
+)
+
+/** Material typography with heavier titles so headings read clearly against body text. */
+private fun gloomTypography(): Typography {
+    val base = Typography()
+    return base.copy(
+        headlineLarge = base.headlineLarge.copy(fontWeight = FontWeight.Bold),
+        headlineMedium = base.headlineMedium.copy(fontWeight = FontWeight.Bold),
+        headlineSmall = base.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
+        titleLarge = base.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+        titleMedium = base.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+        labelLarge = base.labelLarge.copy(fontWeight = FontWeight.Medium),
+    )
+}
