@@ -6,7 +6,9 @@ import dev.materii.gloom.di.module.*
 import dev.materii.gloom.di.repositoryModule
 import dev.materii.gloom.di.serviceModule
 import dev.materii.gloom.ui.activity.viewmodel.OAuthViewModel
+import dev.materii.gloom.domain.manager.AppUpdater
 import dev.materii.gloom.domain.manager.BuildAlerts
+import dev.materii.gloom.util.update.AndroidAppUpdater
 import dev.materii.gloom.util.VersionName
 import dev.materii.gloom.util.alerts.AndroidBuildAlerts
 import org.koin.android.ext.koin.androidContext
@@ -31,7 +33,10 @@ class Gloom: Application() {
                 managerModule(),
                 viewModelModule(),
                 platformModule(),
-                module { single<BuildAlerts> { AndroidBuildAlerts(androidContext()) } },
+                module {
+                    single<BuildAlerts> { AndroidBuildAlerts(androidContext()) }
+                    single<AppUpdater> { AndroidAppUpdater(androidContext()) }
+                },
                 module { viewModelOf(::OAuthViewModel) } // Cant group with the rest
             )
         }

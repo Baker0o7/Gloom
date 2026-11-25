@@ -7,6 +7,7 @@ import dev.materii.gloom.api.dto.dev.CommitActivityWeek
 import dev.materii.gloom.api.dto.dev.CommitItem
 import dev.materii.gloom.api.dto.dev.UserSearchResponse
 import dev.materii.gloom.api.dto.gist.Gist
+import dev.materii.gloom.api.dto.release.LatestRelease
 import kotlinx.serialization.json.JsonObject
 import dev.materii.gloom.api.dto.content.GitRef
 import dev.materii.gloom.api.dto.notification.Notification
@@ -227,6 +228,14 @@ class GithubApiService(
     suspend fun getGists(perPage: Int = 50): ApiResponse<List<Gist>> = withContext(Dispatchers.IO) {
         client.request {
             url("$base/gists?per_page=$perPage")
+            header(HttpHeaders.Authorization, auth())
+            method = HttpMethod.Get
+        }
+    }
+
+    suspend fun getLatestRelease(owner: String, name: String): ApiResponse<LatestRelease> = withContext(Dispatchers.IO) {
+        client.request {
+            url("$base/repos/$owner/$name/releases/latest")
             header(HttpHeaders.Authorization, auth())
             method = HttpMethod.Get
         }

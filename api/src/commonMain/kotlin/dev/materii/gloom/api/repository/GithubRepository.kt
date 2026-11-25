@@ -41,6 +41,7 @@ class GithubRepository(
         service.createBranch(owner, repo, newBranch, fromSha)
 
     suspend fun getGists() = service.getGists()
+    suspend fun getLatestRelease(owner: String, name: String) = service.getLatestRelease(owner, name)
     suspend fun getGist(id: String) = service.getGist(id)
     suspend fun createGist(description: String, isPublic: Boolean, fileName: String, content: String) =
         service.createGist(description, isPublic, fileName, content)

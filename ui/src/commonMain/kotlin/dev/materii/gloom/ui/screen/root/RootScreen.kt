@@ -28,6 +28,8 @@ import dev.materii.gloom.ui.util.DimenUtil
 import dev.materii.gloom.ui.util.RootTab
 import org.koin.compose.koinInject
 
+private var updateCheckedThisSession = false
+
 class RootScreen: Screen {
 
     override val key = "${this::class.qualifiedName}-${uuid4()}"
@@ -39,6 +41,35 @@ class RootScreen: Screen {
     private fun Screen() {
         var accountSwitcherVisible by remember {
             mutableStateOf(false)
+        }
+
+        val updateVm = cafe.adriel.voyager.koin.koinScreenModel<dev.materii.gloom.ui.screen.update.viewmodel.UpdateViewModel>()
+        val rootNav = cafe.adriel.voyager.navigator.LocalNavigator.current
+        var updateDismissed by remember { mutableStateOf(false) }
+
+        // Look for a newer release once per app session.
+        LaunchedEffect(Unit) {
+            if (updateVm.supported && !updateCheckedThisSession) {
+                updateCheckedThisSession = true
+                updateVm.check()
+            }
+        }
+
+        if (!updateDismissed && updateVm.phase == dev.materii.gloom.ui.screen.update.viewmodel.UpdateViewModel.Phase.AVAILABLE) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { updateDismissed = true },
+                title = { Text("Update available") },
+                text = { Text("Gloom ${updateVm.latest?.tagName.orEmpty()} is ready to install.") },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(onClick = {
+                        updateDismissed = true
+                        rootNav?.push(dev.materii.gloom.ui.screen.update.UpdateScreen())
+                    }) { Text("View") }
+                },
+                dismissButton = {
+                    androidx.compose.material3.TextButton(onClick = { updateDismissed = true }) { Text("Later") }
+                },
+            )
         }
 
         if (accountSwitcherVisible) {

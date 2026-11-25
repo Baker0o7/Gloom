@@ -23,6 +23,7 @@ import dev.materii.gloom.Res
 import dev.materii.gloom.ui.component.toolbar.LargeToolbar
 import dev.materii.gloom.ui.screen.auth.LandingScreen
 import dev.materii.gloom.ui.screen.settings.about.AboutScreen
+import dev.materii.gloom.ui.screen.update.UpdateScreen
 import dev.materii.gloom.ui.screen.settings.component.SettingsCategory
 import dev.materii.gloom.ui.screen.settings.component.SettingsGroup
 import dev.materii.gloom.ui.screen.settings.component.account.SignOutDialog
@@ -40,6 +41,8 @@ class SettingsScreen: Screen {
         val viewModel: SettingsViewModel = koinScreenModel()
         val nav = LocalNavigator.currentOrThrow
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+        val koin = org.koin.compose.getKoin()
+        val updatesSupported = androidx.compose.runtime.remember(koin) { koin.getOrNull<dev.materii.gloom.domain.manager.AppUpdater>() != null }
 
         if (viewModel.signOutDialogOpened) {
             SignOutDialog(
@@ -108,6 +111,15 @@ class SettingsScreen: Screen {
                             text = stringResource(Res.strings.settings_development),
                             subtext = stringResource(Res.strings.settings_development_description),
                             destination = ::DeveloperSettingsScreen
+                        )
+                    }
+
+                    if (updatesSupported) {
+                        SettingsCategory(
+                            icon = Icons.Outlined.SystemUpdate,
+                            text = "App updates",
+                            subtext = "Check for a newer version",
+                            destination = ::UpdateScreen
                         )
                     }
 
