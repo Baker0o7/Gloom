@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import com.benasher44.uuid.uuid4
@@ -43,7 +44,7 @@ class RootScreen: Screen {
             mutableStateOf(false)
         }
 
-        val updateVm = cafe.adriel.voyager.koin.koinScreenModel<dev.materii.gloom.ui.screen.update.viewmodel.UpdateViewModel>()
+        val updateVm = koinScreenModel<dev.materii.gloom.ui.screen.update.viewmodel.UpdateViewModel>()
         val rootNav = cafe.adriel.voyager.navigator.LocalNavigator.current
         var updateDismissed by remember { mutableStateOf(false) }
 
