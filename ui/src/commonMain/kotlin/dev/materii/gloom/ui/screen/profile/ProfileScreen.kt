@@ -110,6 +110,21 @@ open class ProfileScreen(
                         )
                     }
 
+                    if (viewModel.user != null && viewModel.hasError && !viewModel.isLoading) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                "Couldn't refresh this profile",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                            TextButton(onClick = { viewModel.loadData() }) { Text("Retry") }
+                        }
+                    }
+
                     viewModel.user?.let { user ->
                         Header(user = user)
 

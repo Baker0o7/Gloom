@@ -82,6 +82,27 @@ class ExploreScreen: Tab {
                         )
                     }
 
+                    if (viewModel.isLoading && viewModel.trendingRepos.isEmpty()) {
+                        item("loading") {
+                            androidx.compose.foundation.layout.Box(
+                                Modifier.fillMaxWidth().padding(top = 64.dp),
+                                contentAlignment = androidx.compose.ui.Alignment.Center
+                            ) { androidx.compose.material3.CircularProgressIndicator() }
+                        }
+                    }
+
+                    if (!viewModel.hasError && !viewModel.isLoading && viewModel.trendingRepos.isEmpty()) {
+                        item("empty") {
+                            Text(
+                                "No trending repositories for this period yet. Pull down to refresh.",
+                                style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 48.dp)
+                            )
+                        }
+                    }
+
                     if (viewModel.hasError && viewModel.trendingRepos.isEmpty() && !viewModel.isLoading) {
                         item("error") {
                             ErrorMessage(

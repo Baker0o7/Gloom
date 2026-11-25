@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 
 class NotificationsViewModel(
     private val repo: GithubRepository,
@@ -29,10 +30,22 @@ class NotificationsViewModel(
     val unreadCount: Int get() = notifications.count { it.unread }
 
     var filterReason by mutableStateOf<String?>(null)
+    var unreadOnly by mutableStateOf(false)
+
+    /** One-shot text for a snackbar (failed actions, refresh errors). */
+    var message by mutableStateOf<String?>(null)
+
+    private var lastLoadedAt = 0L
 
     val filteredNotifications: List<Notification>
-        get() = if (filterReason == null) notifications
-                else notifications.filter { it.reason == filterReason }
+        get() = notifications.filter {
+            (filterReason == null || it.reason == filterReason) && (!unreadOnly || it.unread)
+        }
+
+    /** Reloads when the inbox was last fetched a while ago, e.g. when coming back to the tab. */
+    fun refreshIfStale(maxAgeMs: Long = 60_000L) {
+        if (Clock.System.now().toEpochMilliseconds() - lastLoadedAt > maxAgeMs) load()
+    }
 
     var isLoading by mutableStateOf(false)
         private set
@@ -51,15 +64,19 @@ class NotificationsViewModel(
                 is ApiResponse.Success -> {
                     notifications.clear()
                     notifications.addAll(response.data)
+                    lastLoadedAt = Clock.System.now().toEpochMilliseconds()
                 }
                 is ApiResponse.Empty -> {
                     notifications.clear()
+                    lastLoadedAt = Clock.System.now().toEpochMilliseconds()
                 }
                 is ApiResponse.Error -> {
                     error = "Couldn't load notifications"
+                    if (notifications.isNotEmpty()) message = "Couldn't refresh notifications"
                 }
                 is ApiResponse.Failure -> {
                     error = "Network error. Please try again."
+                    if (notifications.isNotEmpty()) message = "No connection. Showing what was loaded earlier."
                 }
             }
             isLoading = false
@@ -76,16 +93,21 @@ class NotificationsViewModel(
             if (response !is ApiResponse.Success && response !is ApiResponse.Empty) {
                 val i = notifications.indexOfFirst { it.id == id }
                 if (i >= 0) notifications[i] = notifications[i].copy(unread = true)
+                message = "Couldn't mark as read"
             }
         }
     }
 
     fun markAllRead() {
         scope.launch {
-            repo.markAllRead().ifSuccessful { _ ->
-                val updated = notifications.map { it.copy(unread = false) }
-                notifications.clear()
-                notifications.addAll(updated)
+            val response = repo.markAllRead()
+            if (response is ApiResponse.Success || response is ApiResponse.Empty) {
+                // Update in place so the list doesn't flash empty
+                for (i in notifications.indices) {
+                    if (notifications[i].unread) notifications[i] = notifications[i].copy(unread = false)
+                }
+            } else {
+                message = "Couldn't mark all as read"
             }
         }
     }

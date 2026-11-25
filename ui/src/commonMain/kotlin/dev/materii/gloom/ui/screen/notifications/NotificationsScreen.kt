@@ -43,7 +43,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -94,8 +97,20 @@ class NotificationsScreen : Tab {
         val viewModel      = koinScreenModel<NotificationsViewModel>()
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
         val unreadCount    = viewModel.notifications.count { it.unread }
+        val snackbar       = remember { SnackbarHostState() }
+
+        // Coming back to the tab refreshes a stale inbox
+        LaunchedEffect(Unit) { viewModel.refreshIfStale() }
+
+        LaunchedEffect(viewModel.message) {
+            viewModel.message?.let {
+                snackbar.showSnackbar(it)
+                viewModel.message = null
+            }
+        }
 
         Scaffold(
+            snackbarHost = { SnackbarHost(snackbar) },
             topBar = {
                 LargeToolbar(
                     title          = stringResource(Res.strings.navigation_inbox),
@@ -119,6 +134,8 @@ class NotificationsScreen : Tab {
                 FilterRow(
                     selectedReason = viewModel.filterReason,
                     onSelect       = { viewModel.filterReason = it },
+                    unreadOnly     = viewModel.unreadOnly,
+                    onUnreadOnly   = { viewModel.unreadOnly = it },
                 )
                 PullToRefreshBox(
                     isRefreshing = viewModel.isLoading,
@@ -340,7 +357,12 @@ private fun String.toIcon(): ImageVector = when (this) {
 // ─── Filter row ──────────────────────────────────────────────────────────────
 
 @Composable
-private fun FilterRow(selectedReason: String?, onSelect: (String?) -> Unit) {
+private fun FilterRow(
+    selectedReason: String?,
+    onSelect: (String?) -> Unit,
+    unreadOnly: Boolean,
+    onUnreadOnly: (Boolean) -> Unit,
+) {
     val reasons = listOf(null, "mention", "review_requested", "assign", "comment", "subscribed")
     Row(
         modifier = Modifier
@@ -349,6 +371,11 @@ private fun FilterRow(selectedReason: String?, onSelect: (String?) -> Unit) {
             .padding(horizontal = 12.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
+        FilterChip(
+            selected = unreadOnly,
+            onClick  = { onUnreadOnly(!unreadOnly) },
+            label    = { Text("Unread", style = MaterialTheme.typography.labelSmall) },
+        )
         reasons.forEach { reason ->
             val label = when (reason) {
                 null                -> "All"
