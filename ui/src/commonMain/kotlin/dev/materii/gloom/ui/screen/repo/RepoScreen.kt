@@ -195,8 +195,9 @@ class RepoScreen(
         LargeTopAppBar(
             title = {
                 if (!loading) {
-                    if (!viewModel.hasError && viewModel.repoOverview != null) {
-                        val it = viewModel.repoOverview!!
+                    val overview = viewModel.repoOverview
+                    if (!viewModel.hasError && overview != null) {
+                        val it = overview
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                             verticalAlignment = Alignment.CenterVertically

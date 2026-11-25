@@ -2,22 +2,24 @@ package dev.materii.gloom.ui.util
 
 import androidx.compose.ui.graphics.Color
 
-private val hexCodeRegex = "^#?(([0-9a-fA-F]{1,2})([0-9a-fA-F]{1,2})([0-9a-fA-F]{1,2}))$".toRegex()
+private val hexCodeRegex = "^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$".toRegex()
 private val parsedColors = mutableMapOf<String, Color>()
+
+/** Parses `#rgb`, `#rrggbb` (with or without the `#`); anything else falls back to black. */
 val String.parsedColor: Color
     get() {
-        if (parsedColors.containsKey(this)) return parsedColors[this]!!
-        val match = hexCodeRegex.matchEntire(this) ?: return Color.Black
-
-        val (_, r, g, b) = match.groups.toList()
-            .mapNotNull { runCatching { it?.value?.toInt(16) }.getOrNull() }
-
-        return try {
-            parsedColors[this] = Color(r, g, b)
-            Color(r, g, b)
-        } catch (_: Throwable) {
-            Color.Black
-        }
+        parsedColors[this]?.let { return it }
+        val hex = hexCodeRegex.matchEntire(this.trim())?.groupValues?.get(1) ?: return Color.Black
+        val full = if (hex.length == 3) hex.map { "$it$it" }.joinToString("") else hex
+        val color = runCatching {
+            Color(
+                full.substring(0, 2).toInt(16),
+                full.substring(2, 4).toInt(16),
+                full.substring(4, 6).toInt(16)
+            )
+        }.getOrDefault(Color.Black)
+        parsedColors[this] = color
+        return color
     }
 
 val Color.hexCode: String

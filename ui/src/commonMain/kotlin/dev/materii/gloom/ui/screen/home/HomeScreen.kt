@@ -112,10 +112,13 @@ class HomeScreen : Tab {
         val filter       = viewModel.filter
 
         // Indices (into the paged list) that match the active filter. peek() doesn't trigger loads.
-        val visible: List<Int> = if (filter == HomeViewModel.Filter.ALL) {
-            List(items.itemCount) { it }
-        } else {
-            (0 until items.itemCount).filter { i -> items.peek(i)?.matches(filter) ?: false }
+        val itemCount = items.itemCount
+        val visible: List<Int> = remember(filter, itemCount, items.loadState.refresh) {
+            if (filter == HomeViewModel.Filter.ALL) {
+                List(itemCount) { it }
+            } else {
+                (0 until itemCount).filter { i -> items.peek(i)?.matches(filter) ?: false }
+            }
         }
 
         // A filter can hide most of what's loaded; keep fetching pages until there is something to show.
