@@ -8,6 +8,8 @@ import dev.materii.gloom.di.serviceModule
 import dev.materii.gloom.ui.activity.viewmodel.OAuthViewModel
 import dev.materii.gloom.domain.manager.AppUpdater
 import dev.materii.gloom.domain.manager.BuildAlerts
+import dev.materii.gloom.domain.manager.SecretCipher
+import dev.materii.gloom.util.KeystoreSecretCipher
 import dev.materii.gloom.util.update.AndroidAppUpdater
 import dev.materii.gloom.util.VersionName
 import dev.materii.gloom.util.alerts.AndroidBuildAlerts
@@ -36,6 +38,7 @@ class Gloom: Application() {
                 module {
                     single<BuildAlerts> { AndroidBuildAlerts(androidContext()) }
                     single<AppUpdater> { AndroidAppUpdater(androidContext()) }
+                    single<SecretCipher> { KeystoreSecretCipher() }
                 },
                 module { viewModelOf(::OAuthViewModel) } // Cant group with the rest
             )

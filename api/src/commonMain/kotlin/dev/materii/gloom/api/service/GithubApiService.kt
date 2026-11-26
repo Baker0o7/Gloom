@@ -233,6 +233,15 @@ class GithubApiService(
         }
     }
 
+    /** One page (100 items) of a list endpoint such as `user/starred`, returned as raw JSON text. */
+    suspend fun getListPage(endpoint: String, page: Int): ApiResponse<String> = withContext(Dispatchers.IO) {
+        client.request {
+            url("$base/$endpoint?per_page=100&page=$page")
+            header(HttpHeaders.Authorization, auth())
+            method = HttpMethod.Get
+        }
+    }
+
     suspend fun getLatestRelease(owner: String, name: String): ApiResponse<LatestRelease> = withContext(Dispatchers.IO) {
         client.request {
             url("$base/repos/$owner/$name/releases/latest")

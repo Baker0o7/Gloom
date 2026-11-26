@@ -13,7 +13,8 @@ class AuthManager(
     settingsProvider: SettingsProvider,
     private val apollo: ApolloClient,
     private val json: Json,
-    logger: Logger
+    private val logger: Logger,
+    private val cipher: SecretCipher? = null
 ) {
 
     private val settings = settingsProvider.createSettings()
@@ -23,14 +24,33 @@ class AuthManager(
 
     init {
         settings.remove("authToken")
-        for (key in settings.keys) {
+        for (key in settings.keys.toList()) {
+            if (key == "logged_in_id") continue
             try {
-                val acct = json.decodeFromString<Account>(settings.getString(key, ""))
+                val raw = settings.getString(key, "")
+                val acct = json.decodeFromString<Account>(readStored(raw))
                 accounts[key] = acct
-            } catch (e: SerializationException) {
-                if (key != "logged_in_id") logger.error("AuthManager", "Error serializing account", e)
+                // Older installs stored the token in plain text: encrypt it on first read
+                if (cipher != null && !raw.startsWith(ENCRYPTED_PREFIX)) store(acct)
+            } catch (e: Exception) {
+                logger.error("AuthManager", "Couldn't read stored account", e)
             }
         }
+    }
+
+    private fun writeStored(plain: String): String {
+        val c = cipher ?: return plain
+        return runCatching { ENCRYPTED_PREFIX + c.encrypt(plain) }.getOrDefault(plain)
+    }
+
+    private fun readStored(raw: String): String {
+        if (!raw.startsWith(ENCRYPTED_PREFIX)) return raw
+        val c = cipher ?: error("Stored account is encrypted but no cipher is available")
+        return c.decrypt(raw.removePrefix(ENCRYPTED_PREFIX))
+    }
+
+    private fun store(account: Account) {
+        settings.putString(account.id, writeStored(json.encodeToString(account)))
     }
 
     private var currentAccountId: String
@@ -71,7 +91,7 @@ class AuthManager(
     ) {
         Account(id, token, type, baseUrl, avatarUrl, username, displayName, notificationCount).let {
             accounts[id] = it
-            settings.putString(id, json.encodeToString(it))
+            store(it)
         }
     }
 
@@ -118,7 +138,7 @@ class AuthManager(
                 displayName = displayName,
                 notificationCount = notificationCount
             )
-            settings.putString(it.id, json.encodeToString(it))
+            accounts[account.id]?.let { updated -> store(updated) }
         }
     }
 
@@ -135,6 +155,10 @@ class AuthManager(
 
     fun clearApolloCache() {
         apollo.apolloStore.clearAll()
+    }
+
+    private companion object {
+        const val ENCRYPTED_PREFIX = "enc1:"
     }
 
 }

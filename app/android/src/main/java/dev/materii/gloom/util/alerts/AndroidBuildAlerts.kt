@@ -25,6 +25,8 @@ class AndroidBuildAlerts(private val context: Context) : BuildAlerts {
     override fun isWatching(owner: String, name: String): Boolean =
         watched(context).contains("$owner/$name")
 
+    override fun watchedRepos(): List<String> = watched(context).sorted()
+
     override fun setWatching(owner: String, name: String, watch: Boolean) {
         val repos = watched(context).toMutableSet()
         if (watch) repos.add("$owner/$name") else repos.remove("$owner/$name")

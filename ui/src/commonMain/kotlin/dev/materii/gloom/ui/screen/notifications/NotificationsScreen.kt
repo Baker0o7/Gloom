@@ -30,6 +30,7 @@ import androidx.compose.material.icons.outlined.DoneAll
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.LocalOffer
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -98,6 +99,7 @@ class NotificationsScreen : Tab {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
         val unreadCount    = viewModel.notifications.count { it.unread }
         val snackbar       = remember { SnackbarHostState() }
+        val inboxNav       = LocalNavigator.currentOrThrow
 
         // Coming back to the tab refreshes a stale inbox
         LaunchedEffect(Unit) { viewModel.refreshIfStale() }
@@ -120,6 +122,9 @@ class NotificationsScreen : Tab {
                             IconButton(onClick = viewModel::markAllRead) {
                                 Icon(Icons.Outlined.DoneAll, contentDescription = "Mark all read")
                             }
+                        }
+                        IconButton(onClick = { inboxNav.push(dev.materii.gloom.ui.screen.alerts.BuildAlertsScreen()) }) {
+                            Icon(Icons.Outlined.NotificationsActive, contentDescription = "Build alerts")
                         }
                         IconButton(onClick = viewModel::load) {
                             Icon(Icons.Outlined.Refresh, contentDescription = "Refresh")

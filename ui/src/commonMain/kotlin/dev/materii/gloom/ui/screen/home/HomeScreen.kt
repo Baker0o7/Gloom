@@ -17,7 +17,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.DynamicFeed
+import androidx.compose.material.icons.outlined.Group
+import androidx.compose.material.icons.outlined.IosShare
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.NotificationsActive
+import androidx.compose.material.icons.outlined.Search
+import cafe.adriel.voyager.navigator.currentOrThrow
+import dev.materii.gloom.ui.screen.home.component.HomeDashboard
+import dev.materii.gloom.ui.screen.home.component.QuickAction
 import androidx.compose.material3.FilterChip
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.draw.alpha
@@ -110,6 +119,22 @@ class HomeScreen : Tab {
         val isEmpty      = !isRefreshing && items.itemCount == 0 && !hasError
         val canScrollUp  by remember { derivedStateOf { listState.canScrollBackward } }
         val filter       = viewModel.filter
+        val nav          = cafe.adriel.voyager.navigator.LocalNavigator.currentOrThrow
+        val tabNav       = LocalTabNavigator.current
+        val authManager: dev.materii.gloom.domain.manager.AuthManager = org.koin.compose.koinInject()
+        val notifVM: dev.materii.gloom.ui.screen.notifications.viewmodel.NotificationsViewModel = org.koin.compose.koinInject()
+        val account      = authManager.currentAccount
+        val unread       = notifVM.unreadCount
+        val quickActions = listOf(
+            QuickAction("Search", Icons.Outlined.Search) { nav.push(dev.materii.gloom.ui.screen.search.SearchScreen()) },
+            QuickAction("Inbox", Icons.Outlined.Notifications, unread) {
+                tabNav.current = dev.materii.gloom.ui.util.RootTab.NOTIFICATIONS.tab
+            },
+            QuickAction("Gists", Icons.Outlined.Description) { nav.push(dev.materii.gloom.ui.screen.gists.GistsScreen()) },
+            QuickAction("Developers", Icons.Outlined.Group) { nav.push(dev.materii.gloom.ui.screen.dev.DevelopersScreen()) },
+            QuickAction("Alerts", Icons.Outlined.NotificationsActive) { nav.push(dev.materii.gloom.ui.screen.alerts.BuildAlertsScreen()) },
+            QuickAction("Export", Icons.Outlined.IosShare) { nav.push(dev.materii.gloom.ui.screen.export.ExportScreen()) },
+        )
 
         // Indices (into the paged list) that match the active filter. peek() doesn't trigger loads.
         val itemCount = items.itemCount
@@ -133,7 +158,17 @@ class HomeScreen : Tab {
 
         Scaffold(
             topBar = {
-                LargeToolbar(options.title, scrollBehavior = scrollBehavior)
+                LargeToolbar(
+                    options.title,
+                    scrollBehavior = scrollBehavior,
+                    actions = {
+                        androidx.compose.material3.IconButton(onClick = {
+                            nav.push(dev.materii.gloom.ui.screen.search.SearchScreen())
+                        }) {
+                            Icon(Icons.Outlined.Search, contentDescription = "Search")
+                        }
+                    }
+                )
             },
             floatingActionButton = {
                 AnimatedVisibility(canScrollUp, enter = scaleIn(), exit = scaleOut()) {
@@ -196,6 +231,9 @@ class HomeScreen : Tab {
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp),
                         ) {
+                            item(key = "dashboard") {
+                                HomeDashboard(account?.displayName?.takeIf { it.isNotBlank() } ?: account?.username, quickActions)
+                            }
                             items(
                                 count = visible.size,
                                 key   = { visible[it] },

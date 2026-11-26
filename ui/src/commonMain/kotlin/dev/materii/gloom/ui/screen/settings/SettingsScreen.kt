@@ -24,6 +24,8 @@ import dev.materii.gloom.ui.component.toolbar.LargeToolbar
 import dev.materii.gloom.ui.screen.auth.LandingScreen
 import dev.materii.gloom.ui.screen.settings.about.AboutScreen
 import dev.materii.gloom.ui.screen.update.UpdateScreen
+import dev.materii.gloom.ui.screen.export.ExportScreen
+import dev.materii.gloom.ui.screen.alerts.BuildAlertsScreen
 import dev.materii.gloom.ui.screen.settings.component.SettingsCategory
 import dev.materii.gloom.ui.screen.settings.component.SettingsGroup
 import dev.materii.gloom.ui.screen.settings.component.account.SignOutDialog
@@ -102,6 +104,21 @@ class SettingsScreen: Screen {
                             destination = ::DownloadsSettingsScreen
                         )
                     }
+                }
+
+                SettingsGroup {
+                    SettingsCategory(
+                        icon = Icons.Outlined.IosShare,
+                        text = "Export your data",
+                        subtext = "Starred repos, repositories, gists as JSON",
+                        destination = ::ExportScreen
+                    )
+                    SettingsCategory(
+                        icon = Icons.Outlined.NotificationsActive,
+                        text = "Build alerts",
+                        subtext = "Repositories you're alerted about when a build fails",
+                        destination = ::BuildAlertsScreen
+                    )
                 }
 
                 SettingsGroup {

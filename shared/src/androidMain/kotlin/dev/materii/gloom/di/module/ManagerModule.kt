@@ -18,11 +18,16 @@ actual fun managerModule() = module {
 
     fun providePreferenceManager(settings: SettingsProvider) = PreferenceManager(settings)
     fun provideDialogManager(settings: SettingsProvider) = DialogManager(settings)
-    fun provideAuthManager(settings: SettingsProvider, apollo: ApolloClient, json: Json, logger: Logger) =
-        AuthManager(settings, apollo, json, logger)
+    fun provideAuthManager(
+        settings: SettingsProvider,
+        apollo: ApolloClient,
+        json: Json,
+        logger: Logger,
+        cipher: SecretCipher?
+    ) = AuthManager(settings, apollo, json, logger, cipher)
 
     single { providePreferenceManager(get(named("prefs"))) }
     single { provideDialogManager(get(named("dialogs"))) }
-    single { provideAuthManager(get(named("auth")), get(), get(), get()) }
+    single { provideAuthManager(get(named("auth")), get(), get(), get(), getOrNull<SecretCipher>()) }
 
 }

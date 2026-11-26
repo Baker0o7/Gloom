@@ -3,6 +3,7 @@ package dev.materii.gloom.di.module
 import dev.materii.gloom.domain.manager.AppUpdater
 import dev.materii.gloom.ui.screen.actions.viewmodel.ActionsViewModel
 import dev.materii.gloom.ui.screen.update.viewmodel.UpdateViewModel
+import dev.materii.gloom.ui.screen.export.viewmodel.ExportViewModel
 import dev.materii.gloom.ui.screen.activity.viewmodel.CommitActivityViewModel
 import dev.materii.gloom.ui.screen.dev.viewmodel.DevelopersViewModel
 import dev.materii.gloom.ui.screen.discussions.viewmodel.DiscussionViewModel
@@ -52,6 +53,7 @@ fun viewModelModule() = module {
     factoryOf(::HomeViewModel)
     factoryOf(::ActionsViewModel)
     factory { UpdateViewModel(get(), getOrNull<AppUpdater>()) }
+    factory { ExportViewModel(get(), getOrNull<dev.materii.gloom.domain.manager.BuildAlerts>()) }
     factoryOf(::GistsViewModel)
     factoryOf(::DevelopersViewModel)
     factoryOf(::CommitActivityViewModel)
