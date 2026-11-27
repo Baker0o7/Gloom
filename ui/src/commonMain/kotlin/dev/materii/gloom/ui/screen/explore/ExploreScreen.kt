@@ -73,7 +73,9 @@ class ExploreScreen: Tab {
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                    verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(10.dp),
                 ) {
                     item("header") {
                         TrendingFeedHeader(
@@ -117,6 +119,11 @@ class ExploreScreen: Tab {
                         viewModel.trendingRepos,
                         key = { it.id }
                     ) { trendingRepo ->
+                        androidx.compose.material3.Surface(
+                            shape = androidx.compose.material3.MaterialTheme.shapes.large,
+                            color = androidx.compose.material3.MaterialTheme.colorScheme.surfaceContainerLow,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
                         TrendingRepoItem(
                             trendingRepository = trendingRepo,
                             trendingPeriod = viewModel.trendingPeriod,
@@ -126,6 +133,7 @@ class ExploreScreen: Tab {
                             onStarClick = { viewModel.starRepo(trendingRepo.id) },
                             onUnstarClick = { viewModel.unstarRepo(trendingRepo.id) }
                         )
+                        }
                     }
 
                     if (viewModel.trendingRepos.isNotEmpty()) {

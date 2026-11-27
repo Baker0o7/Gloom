@@ -177,27 +177,41 @@ private fun NotificationList(
     // Group by repository
     val grouped = notifications.groupBy { it.repository.fullName }
 
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        grouped.forEach { (repoFullName, items) ->
-            // Sticky-ish repo header
-            item(key = "header_$repoFullName") {
-                RepoHeader(
-                    repoFullName = repoFullName,
-                    avatarUrl    = items.first().repository.owner.avatarUrl,
-                    unreadCount  = items.count { it.unread },
-                )
-            }
-            items(items, key = { it.id }) { notification ->
-                NotificationRow(
-                    notification = notification,
-                    onMarkRead   = { onMarkRead(notification.id) },
-                    onClick      = {
-                        // Opening a notification reads it, like on github.com
-                        if (notification.unread) onMarkRead(notification.id)
-                        nav.navigate(RepoScreen(notification.repository.owner.login, notification.repository.name))
-                    },
-                )
-                ThinDivider()
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        grouped.forEach { (repoFullName, group) ->
+            // One rounded card per repository
+            item(key = "group_$repoFullName") {
+                androidx.compose.material3.Surface(
+                    shape    = MaterialTheme.shapes.large,
+                    color    = MaterialTheme.colorScheme.surfaceContainerLow,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column {
+                        RepoHeader(
+                            repoFullName = repoFullName,
+                            avatarUrl    = group.first().repository.owner.avatarUrl,
+                            unreadCount  = group.count { it.unread },
+                        )
+                        group.forEachIndexed { index, notification ->
+                            androidx.compose.runtime.key(notification.id) {
+                                NotificationRow(
+                                    notification = notification,
+                                    onMarkRead   = { onMarkRead(notification.id) },
+                                    onClick      = {
+                                        // Opening a notification reads it, like on github.com
+                                        if (notification.unread) onMarkRead(notification.id)
+                                        nav.navigate(RepoScreen(notification.repository.owner.login, notification.repository.name))
+                                    },
+                                )
+                            }
+                            if (index < group.lastIndex) ThinDivider()
+                        }
+                    }
+                }
             }
         }
     }
@@ -258,8 +272,8 @@ private fun NotificationRow(notification: Notification, onMarkRead: () -> Unit, 
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                if (notification.unread) MaterialTheme.colorScheme.surfaceContainerLow
-                else MaterialTheme.colorScheme.surface
+                if (notification.unread) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.35f)
+                else androidx.compose.ui.graphics.Color.Transparent
             )
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 12.dp),
@@ -273,7 +287,7 @@ private fun NotificationRow(notification: Notification, onMarkRead: () -> Unit, 
                 .clip(CircleShape)
                 .background(
                     if (notification.unread) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.surface
+                    else androidx.compose.ui.graphics.Color.Transparent
                 )
         )
 
